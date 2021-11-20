@@ -10,6 +10,17 @@ readonly rbedit_image="rtdo/rbedit"
 
 build_dir=$(mktemp -d); readonly build_dir
 
+case "${RBEDIT_ARCH:-linux}" in
+  "darwin")
+    ;;
+  "linux")
+    ;;
+  *)
+    echo "invalid RBEDIT_ARCH value: '${RBEDIT_ARCH}'"
+    exit 1
+    ;;
+esac
+
 cleanup() {
   local -r retval="$?"
   set +eu
@@ -43,9 +54,11 @@ cd "${project_root}"
 git clone --depth 1 file://"${project_root}" "${build_dir}"
 
 docker build \
+  --progress plain \
   --file "./Dockerfile" \
   --target "rbedit" \
   --tag "${rbedit_image}"\
+  --build-arg "TARGET_ARCH=${RBEDIT_ARCH}" \
   .
 
 docker create -i --rm \

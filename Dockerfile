@@ -2,6 +2,8 @@ FROM ubuntu:focal AS build-env
 
 WORKDIR /build
 
+ARG TARGET_ARCH
+
 RUN set -xe; \
   apt-get update; apt-get upgrade -y; apt-get --purge autoremove -y; apt-get install -y \
     curl \
@@ -11,25 +13,7 @@ RUN set -xe; \
   apt-get clean
 
 RUN set -xe; \
-  curl -LSs https://www.musl-libc.org/releases/musl-latest.tar.gz -o musl.tar.gz; \
-  tar -xzf musl.tar.gz; \
-  ( cd musl-*/; \
-    ./configure; \
-    make; \
-    make install; \
-  ); \
-  rm -rf musl*; \
-  \
-  cd /usr/local/musl/include; \
-  ln -s /usr/include/linux .; \
-  ln -s /usr/include/asm-generic .; \
-  ln -s /usr/include/x86_64-linux-gnu .; \
-  ln -s x86_64-linux-gnu/asm asm
-
-ENV CC=/usr/local/musl/bin/musl-gcc
-
-RUN set -xe; \
-  curl -LSs https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz -o go.tar.gz; \
+  curl -LSs "https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz" -o go.tar.gz; \
   tar -C /usr/local/ -xzf go.tar.gz; \
   rm -f go.tar.gz
 
@@ -40,11 +24,20 @@ ENV PATH=${GOPATH}/bin:/usr/local/go/bin/:${PATH}
 
 FROM build-env AS rbedit-builder
 
+ARG TARGET_ARCH
+
+ENV CGO_ENABLED=0
+ENV GOOS="${TARGET_ARCH}"
+ENV GOARCH=amd64
+
 COPY ./ ./
 
-RUN go build
-
-RUN ls ./
+RUN go build \
+    -o ./rbedit \
+    -v \
+    -mod=readonly \
+    -mod=vendor \
+    -ldflags "-s -w"
 
 
 FROM rbedit-builder AS rbedit

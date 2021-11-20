@@ -9,31 +9,47 @@ import (
 	"github.com/google/subcommands"
 )
 
+func printUsageError(cmd, msg string) subcommands.ExitStatus {
+	fmt.Printf("rbedit %s: %s", cmd, msg)
+	return subcommands.ExitUsageError
+}
+
+func (c *listCmd) stringArg(f *flag.FlagSet) (string, subcommands.ExitStatus) {
+	if f.NArg() == 0 {
+		return "", printUsageError(c.Name(), "command requires an argument, got none")
+	}
+	if f.NArg() > 1 {
+		return "", printUsageError(c.Name(), "command requires a single argument, got multiple")
+	}
+
+	return f.Arg(0), subcommands.ExitSuccess
+}
+
 type listCmd struct {
+	file string
 }
 
 func (*listCmd) Name() string     { return "list" }
-func (*listCmd) Synopsis() string { return "List keys." }
+func (*listCmd) Synopsis() string { return "List keys" }
 func (*listCmd) Usage() string {
-	return `
-Usage:  print <PREFIX>
+	return `Usage:  list <PREFIX>
 
-Print args to stdout
+List keys in a hash map
+
 `
 }
 
-func (p *listCmd) SetFlags(f *flag.FlagSet) {
+func (c *listCmd) SetFlags(f *flag.FlagSet) {
+	f.StringVar(&c.file, "file", "", "Input file")
 }
 
-func (p *listCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	// for _, arg := range f.Args() {
-	// 	if p.capitalize {
-	// 		arg = strings.ToUpper(arg)
-	// 	}
-	// 	fmt.Printf("%s ", arg)
-	// }
+func (c *listCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+	filename, status := c.stringArg(f)
+	if status != subcommands.ExitSuccess {
+		return status
+	}
 
-	fmt.Printf("list:")
+	fmt.Printf("list: %s\n", filename)
 
 	return subcommands.ExitSuccess
 }
