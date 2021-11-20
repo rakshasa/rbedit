@@ -49,6 +49,7 @@ cd "${project_root}"
 git clone --depth 1 file://"${project_root}" "${build_dir}"
 
 docker build \
+  --progress plain \
   --file "./Dockerfile" \
   --target "build-env" \
   --tag "${build_image}"\

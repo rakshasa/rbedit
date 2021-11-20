@@ -1,3 +1,6 @@
 # github.com/google/subcommands v1.2.0
 ## explicit
 github.com/google/subcommands
+# github.com/jackpal/bencode-go v1.0.0
+## explicit
+github.com/jackpal/bencode-go
