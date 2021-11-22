@@ -15,7 +15,12 @@ func printStatusError(cmd string, err ExitStatusError) subcommands.ExitStatus {
 }
 
 func printStatusErrorWithKey(cmd string, err ExitStatusError, keys []string) subcommands.ExitStatus {
-	fmt.Fprintf(os.Stderr, "rbedit %s: %s: %s\n", cmd, err.Error(), newKeyPathAsPlain(keys))
+	keyPath := newKeyPathAsPlain(keys)
+	if len(keyPath) == 0 {
+		keyPath = "root object"
+	}
+
+	fmt.Fprintf(os.Stderr, "rbedit %s: %s: %s\n", cmd, err.Error(), keyPath)
 	return err.Status()
 }
 

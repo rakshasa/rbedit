@@ -42,7 +42,7 @@ func (c *MapCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface
 // MapsKeyCmd:
 
 type MapKeysCmd struct {
-	loader objects.Loader
+	CommandBase
 }
 
 func (*MapKeysCmd) Name() string     { return "keys" }
@@ -55,42 +55,19 @@ Map keys in a hash map
 `
 }
 
-func (c *MapKeysCmd) loadFile(path string) error {
-	loader, err := objects.NewFileLoader(path)
-	if err != nil {
-		return err
-	}
-
-	c.loader = loader
-	return nil
-}
-
 func (c *MapKeysCmd) SetFlags(f *flag.FlagSet) {
-	const (
-		fileUsage = "Input file"
-	)
-
-	f.Func("file", fileUsage, c.loadFile)
-	f.Func("f", fileUsage+"(shorthand)", c.loadFile)
+	c.commonInputFlags(f)
 }
 
 func (c *MapKeysCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	// if f.NArg() > 1 {
-	// 	return printStatusError("map keys", &exitUsageError{msg: "command requires none or a single key path argument"})
-	// }
 	keys := f.Args()
 
-	rootObj, err := c.loader.WaitResult()
-	if err != nil {
-		return printStatusError("map keys", &exitFailureError{msg: err.Error()})
-	}
-
-	obj, err := objects.LookupKeyPath(rootObj, keys)
+	obj, err := c.lookupKeyPath(keys)
 	if err != nil {
 		return printStatusErrorWithKey("map keys", &exitFailureError{msg: err.Error()}, keys)
 	}
 
-	if err := objects.PrintMapObjectKeysAsPlain(obj); err != nil {
+	if err := objects.PrintMapObject(obj, objects.WithKeysOnly()); err != nil {
 		return printStatusErrorWithKey("map keys", &exitFailureError{msg: err.Error()}, keys)
 	}
 

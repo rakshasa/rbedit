@@ -12,6 +12,14 @@ type Loader interface {
 	WaitResult() (interface{}, error)
 }
 
+func WaitLoaderResult(l Loader) (interface{}, error) {
+	if l == nil {
+		return nil, fmt.Errorf("no bencode data loaded")
+	}
+
+	return l.WaitResult()
+}
+
 type decodeResult struct {
 	obj interface{}
 	err error

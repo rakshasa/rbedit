@@ -14,6 +14,7 @@ func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
+	subcommands.Register(&commands.GetCmd{}, "")
 	subcommands.Register(&commands.MapCmd{}, "")
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {

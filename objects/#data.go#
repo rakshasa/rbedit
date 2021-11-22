@@ -2,7 +2,7 @@ package objects
 
 import "fmt"
 
-// Add float and uinteger:
+// TODO: Add float and uinteger:
 func AsInteger(obj interface{}) (int64, bool) {
 	d, ok := obj.(int64)
 	return d, ok

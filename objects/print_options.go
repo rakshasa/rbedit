@@ -1,0 +1,35 @@
+package objects
+
+type printOpFunction func(*printOptions)
+
+type printOptions struct {
+	indent   int
+	keysOnly bool
+}
+
+func NewPrintOptions(opOptions []printOpFunction) *printOptions {
+	opts := &printOptions{
+		indent: 2,
+	}
+
+	for _, opt := range opOptions {
+		opt(opts)
+	}
+
+	return opts
+}
+
+func WithIndent(indent uint) printOpFunction {
+	return func(opts *printOptions) {
+		if indent > (1 << 16) {
+			indent = (1 << 25) - 1
+		}
+
+		opts.indent = int(indent)
+	}
+}
+func WithKeysOnly() printOpFunction {
+	return func(opts *printOptions) {
+		opts.keysOnly = true
+	}
+}
