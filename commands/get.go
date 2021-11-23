@@ -37,9 +37,9 @@ func (c *GetCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface
 
 	keys := f.Args()
 
-	obj, err := c.lookupKeyPath(keys)
-	if err != nil {
-		return printStatusErrorWithKey("get", &exitFailureError{msg: err.Error()}, keys)
+	_, obj, statusErr := c.loadRootWithKeyPath(keys)
+	if statusErr != nil {
+		return printStatusErrorWithKey("get", statusErr, keys)
 	}
 
 	objects.PrintObject(obj)

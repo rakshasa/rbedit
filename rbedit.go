@@ -15,7 +15,11 @@ func main() {
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
 	subcommands.Register(&commands.GetCmd{}, "")
+	subcommands.Register(&commands.PutCmd{}, "")
 	subcommands.Register(&commands.MapCmd{}, "")
+
+	// TODO: Add checks to make sure key order is preserved (do in bencode module).
+	// TODO: Disable scientific notation and float, unless passed a flag.
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "rbedit: %s\n", err.Error())

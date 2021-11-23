@@ -14,7 +14,7 @@ type Loader interface {
 
 func WaitLoaderResult(l Loader) (interface{}, error) {
 	if l == nil {
-		return nil, fmt.Errorf("no bencode data loaded")
+		return nil, fmt.Errorf("could not wait for loader results, loader not initalized")
 	}
 
 	return l.WaitResult()
@@ -30,7 +30,7 @@ type fileLoader struct {
 }
 
 func NewFileLoader(path string) (*fileLoader, error) {
-	file, err := os.Open(path)
+	file, err := os.OpenFile(path, os.O_RDONLY, 0444)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file for bencode decoding: %v", err)
 	}
@@ -40,9 +40,11 @@ func NewFileLoader(path string) (*fileLoader, error) {
 	}
 
 	go func() {
+		defer file.Close()
+
 		obj, err := bencode.Decode(bufio.NewReader(file))
 		if err != nil {
-			loader.decodeChan <- decodeResult{err: fmt.Errorf("could not bencode decode file: %v", err)}
+			loader.decodeChan <- decodeResult{err: fmt.Errorf("failed to decode bencoded file: %v", err)}
 			return
 		}
 

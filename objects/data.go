@@ -43,3 +43,36 @@ func LookupKeyPath(obj interface{}, keys []string) (interface{}, error) {
 
 	return LookupKeyPath(child, keys[1:])
 }
+
+// Returns the root object with the modified key path object.
+func SetKeyPath(parentObj, setObj interface{}, keys []string) (interface{}, error) {
+	if len(keys) == 0 {
+		return setObj, nil
+	}
+
+	childKey := keys[0]
+	if len(childKey) == 0 {
+		return nil, fmt.Errorf("empty key path element")
+	}
+
+	m, ok := AsMap(parentObj)
+	if !ok {
+		return nil, fmt.Errorf("not a map")
+	}
+
+	childObj, ok := m[childKey]
+	if !ok {
+		if len(keys) != 1 {
+			return nil, fmt.Errorf("a key path object was not map")
+		}
+	}
+
+	childObj, err := SetKeyPath(childObj, setObj, keys[1:])
+	if err != nil {
+		return nil, err
+	}
+
+	m[childKey] = childObj
+
+	return m, nil
+}

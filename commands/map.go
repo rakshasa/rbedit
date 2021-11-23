@@ -62,9 +62,9 @@ func (c *MapKeysCmd) SetFlags(f *flag.FlagSet) {
 func (c *MapKeysCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	keys := f.Args()
 
-	obj, err := c.lookupKeyPath(keys)
-	if err != nil {
-		return printStatusErrorWithKey("map keys", &exitFailureError{msg: err.Error()}, keys)
+	_, obj, statusErr := c.loadRootWithKeyPath(keys)
+	if statusErr != nil {
+		return printStatusErrorWithKey("map keys", statusErr, keys)
 	}
 
 	if err := objects.PrintMapObject(obj, objects.WithKeysOnly()); err != nil {

@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -95,6 +96,7 @@ func sprintMap(m map[string]interface{}, opts *printOptions) []string {
 	for key, _ := range m {
 		keys = append(keys, key)
 	}
+	sort.Strings(keys)
 
 	var strs []string
 
