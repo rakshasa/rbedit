@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	bencode "github.com/jackpal/bencode-go"
+	bencode "github.com/rakshasa/bencode-go"
 )
 
 func DecodeBencodeFile(filename string) (interface{}, error) {

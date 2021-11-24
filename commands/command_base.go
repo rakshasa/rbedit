@@ -83,7 +83,7 @@ func (c *CommandBase) saveRootWithKeyPath(rootObj, setObj interface{}, keys []st
 		return nil, &exitFailureError{msg: "cannot save a key path with nil value"}
 	}
 
-	rootObj, err := objects.SetKeyPath(rootObj, setObj, keys[:len(keys)-1])
+	rootObj, err := objects.SetKeyPath(rootObj, setObj, keys)
 	if err != nil {
 		return nil, &exitFailureError{msg: err.Error()}
 	}
