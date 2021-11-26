@@ -33,10 +33,6 @@ func (c *PutCmd) SetFlags(f *flag.FlagSet) {
 }
 
 func (c *PutCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-	if f.NArg() == 0 && !c.includeRoot {
-		f.Usage()
-		return subcommands.ExitSuccess
-	}
 	if f.NArg() == 0 {
 		return printStatusError("put", &exitUsageError{msg: "cannot use root object as target"})
 	}

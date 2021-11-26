@@ -1,6 +1,9 @@
 package objects
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Add float and uinteger:
 func AsInteger(obj interface{}) (int64, bool) {
@@ -23,29 +26,43 @@ func AsString(obj interface{}) (string, bool) {
 	return s, ok
 }
 
-func LookupKeyPath(obj interface{}, keys []string) (interface{}, error) {
+func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 	if len(keys) == 0 {
-		return obj, nil
+		return parentObj, nil
 	}
-	if len(keys[0]) == 0 {
+
+	childKey := keys[0]
+	if len(childKey) == 0 {
 		return nil, fmt.Errorf("empty key path element")
 	}
 
-	m, ok := AsMap(obj)
-	if !ok {
-		return nil, fmt.Errorf("not a map")
+	var childObj interface{}
+
+	if m, ok := AsMap(parentObj); ok {
+		if childObj, ok = m[childKey]; !ok {
+			return nil, fmt.Errorf("could not find key path object")
+		}
+	} else if l, ok := AsList(parentObj); ok {
+		idx, err := strconv.Atoi(childKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert key path element to list index")
+		}
+		if idx < 0 || idx >= len(l) {
+			return nil, fmt.Errorf("invalid list index number")
+		}
+
+		if childObj = l[idx]; !ok {
+			return nil, fmt.Errorf("could not find key path object")
+		}
+	} else {
+		return nil, fmt.Errorf("key path objects except the last must be a map or a list")
 	}
 
-	child, ok := m[keys[0]]
-	if !ok {
-		return nil, fmt.Errorf("could not find child object")
-	}
-
-	return LookupKeyPath(child, keys[1:])
+	return LookupKeyPath(childObj, keys[1:])
 }
 
 // Returns the root object with the modified key path object.
-func SetKeyPath(parentObj, setObj interface{}, keys []string) (interface{}, error) {
+func SetObject(parentObj, setObj interface{}, keys []string) (interface{}, error) {
 	if len(keys) == 0 {
 		return setObj, nil
 	}
@@ -55,24 +72,45 @@ func SetKeyPath(parentObj, setObj interface{}, keys []string) (interface{}, erro
 		return nil, fmt.Errorf("empty key path element")
 	}
 
-	m, ok := AsMap(parentObj)
-	if !ok {
-		return nil, fmt.Errorf("not a map")
-	}
+	var childObj interface{}
 
-	childObj, ok := m[childKey]
-	if !ok {
-		if len(keys) != 1 {
-			return nil, fmt.Errorf("a key path object was not map")
+	if m, ok := AsMap(parentObj); ok {
+		if childObj, ok = m[childKey]; !ok {
+			return nil, fmt.Errorf("could not find key path object")
 		}
+
+		childObj, err := SetObject(childObj, setObj, keys[1:])
+		if err != nil {
+			return nil, err
+		}
+
+		m[childKey] = childObj
+		parentObj = m
+
+	} else if l, ok := AsList(parentObj); ok {
+		idx, err := strconv.Atoi(childKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert key path element to list index")
+		}
+		if idx < 0 || idx >= len(l) {
+			return nil, fmt.Errorf("invalid list index number")
+		}
+
+		if childObj = l[idx]; !ok {
+			return nil, fmt.Errorf("could not find key path object")
+		}
+
+		childObj, err := SetObject(childObj, setObj, keys[1:])
+		if err != nil {
+			return nil, err
+		}
+
+		l[idx] = childObj
+		parentObj = l
+
+	} else {
+		return nil, fmt.Errorf("key path objects except the last must be a map or a list")
 	}
 
-	childObj, err := SetKeyPath(childObj, setObj, keys[1:])
-	if err != nil {
-		return nil, err
-	}
-
-	m[childKey] = childObj
-
-	return m, nil
+	return parentObj, nil
 }

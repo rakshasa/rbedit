@@ -13,13 +13,11 @@ type CommandBase struct {
 	path  string
 	value interface{}
 
-	includeRoot bool
-	inplace     bool
+	inplace bool
 }
 
 func (c *CommandBase) commonInputFlags(f *flag.FlagSet) {
 	f.Func("file", "Input file", c.fileLoader)
-	f.BoolVar(&c.includeRoot, "include-root", false, "When passing no arguments, get root object")
 }
 
 func (c *CommandBase) commonOutputFlags(f *flag.FlagSet) {
@@ -53,7 +51,7 @@ func (c *CommandBase) bencodeWriter(rootObj interface{}) (objects.Saver, ExitSta
 
 		path = c.path
 	} else {
-		return nil, &exitUsageError{msg: "no output target selected"}
+		return nil, &exitUsageError{msg: "no bencode output target selected"}
 	}
 
 	saver, err := objects.NewFileSaver(path, rootObj)
@@ -83,7 +81,7 @@ func (c *CommandBase) saveRootWithKeyPath(rootObj, setObj interface{}, keys []st
 		return nil, &exitFailureError{msg: "cannot save a key path with nil value"}
 	}
 
-	rootObj, err := objects.SetKeyPath(rootObj, setObj, keys)
+	rootObj, err := objects.SetObject(rootObj, setObj, keys)
 	if err != nil {
 		return nil, &exitFailureError{msg: err.Error()}
 	}

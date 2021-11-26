@@ -30,11 +30,6 @@ func (c *GetCmd) SetFlags(f *flag.FlagSet) {
 }
 
 func (c *GetCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-	if f.NArg() == 0 && !c.includeRoot {
-		f.Usage()
-		return subcommands.ExitSuccess
-	}
-
 	keys := f.Args()
 
 	_, obj, statusErr := c.loadRootWithKeyPath(keys)

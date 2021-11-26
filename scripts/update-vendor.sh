@@ -10,7 +10,7 @@ readonly build_image="rtdo/build/rbedit"
 
 readonly dependencies=(
   # github.com/jackpal/bencode-go@v1.0.0
-  github.com/rakshasa/bencode-go@latest
+  github.com/rakshasa/bencode-go@v1.0.1
   github.com/google/subcommands@v1.2.0
 )
 
@@ -61,6 +61,7 @@ docker run -i \
   --volume "${build_dir}":/build/go/src/github.com/rakshasa/rbedit \
   "${build_image}" \
   /bin/bash - <<"EOF"
+#!/bin/bash
 set -euxo pipefail
 
 cd /build/go/src/github.com/rakshasa/rbedit/
