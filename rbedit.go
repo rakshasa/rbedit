@@ -10,16 +10,20 @@ import (
 	"github.com/rakshasa/rbedit/commands"
 )
 
-func main() {
-	subcommands.Register(subcommands.HelpCommand(), "")
-	subcommands.Register(subcommands.FlagsCommand(), "")
-	subcommands.Register(subcommands.CommandsCommand(), "")
-	subcommands.Register(&commands.GetCmd{}, "")
-	subcommands.Register(&commands.PutCmd{}, "")
-	subcommands.Register(&commands.MapCmd{}, "")
-	subcommands.Register(&commands.TorrentCmd{}, "")
+const (
+	helperCategory     = "helper"
+	bencodeCategory    = "bencode"
+	bittorrentCategory = "bittorrent"
+)
 
-	// TODO: Add checks to make sure key order is preserved (do in bencode module).
+func main() {
+	subcommands.Register(subcommands.HelpCommand(), helperCategory)
+	subcommands.Register(subcommands.FlagsCommand(), helperCategory)
+	subcommands.Register(subcommands.CommandsCommand(), helperCategory)
+	subcommands.Register(&commands.GetCmd{}, bencodeCategory)
+	subcommands.Register(&commands.PutCmd{}, bencodeCategory)
+	subcommands.Register(&commands.AnnounceCmd{}, bittorrentCategory)
+
 	// TODO: Disable scientific notation and float, unless passed a flag.
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {

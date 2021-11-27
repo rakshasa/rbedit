@@ -18,7 +18,8 @@ func (*GetCmd) Name() string     { return "get" }
 func (*GetCmd) FullName() string { return "get" }
 func (*GetCmd) Synopsis() string { return "Get commands" }
 func (*GetCmd) Usage() string {
-	return `Usage:  get KEY/INDEX [KEY/INDEX ...]
+	return `
+Usage:  get KEY/INDEX [KEY/INDEX ...]
 
 Get commands
 

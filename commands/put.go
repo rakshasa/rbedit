@@ -18,7 +18,8 @@ func (*PutCmd) Name() string     { return "put" }
 func (*PutCmd) FullName() string { return "put" }
 func (*PutCmd) Synopsis() string { return "Put commands" }
 func (*PutCmd) Usage() string {
-	return `Usage:  put KEY/INDEX [KEY/INDEX ...]
+	return `
+Usage:  put KEY/INDEX [KEY/INDEX ...]
 
 Put commands
 
