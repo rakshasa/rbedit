@@ -62,7 +62,16 @@ func (c *CommandBase) bencodeWriter(rootObj interface{}) (objects.Saver, ExitSta
 	return saver, nil
 }
 
+func (c *CommandBase) loadRoot() (interface{}, ExitStatusError) {
+	rootObj, _, statusErr := c.loadRootWithKeyPath([]string{})
+	return rootObj, statusErr
+}
+
 func (c *CommandBase) loadRootWithKeyPath(keys []string) (interface{}, interface{}, ExitStatusError) {
+	if c.loader == nil {
+		return nil, nil, &exitUsageError{msg: "no bencode data source provided"}
+	}
+
 	rootObj, err := objects.WaitLoaderResult(c.loader)
 	if err != nil {
 		return nil, nil, &exitFailureError{msg: err.Error()}

@@ -15,7 +15,7 @@ type MapCmd struct{}
 func (*MapCmd) Name() string     { return "map" }
 func (*MapCmd) Synopsis() string { return "Map commands" }
 func (*MapCmd) Usage() string {
-	return `Usage:  map COMMAND
+	return `Usage:  rbedit map COMMAND
 
 Map commands
 
@@ -48,7 +48,7 @@ type MapKeysCmd struct {
 func (*MapKeysCmd) Name() string     { return "keys" }
 func (*MapKeysCmd) Synopsis() string { return "Map keys" }
 func (*MapKeysCmd) Usage() string {
-	return `Usage:  map keys <PREFIX>
+	return `Usage:  rbedit map keys <PREFIX>
 
 Map keys in a hash map
 

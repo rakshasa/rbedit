@@ -17,18 +17,16 @@ RUN set -xe; \
   tar -C /usr/local/ -xzf go.tar.gz; \
   rm -f go.tar.gz
 
-ENV GOPATH=/build/go
-ENV GO111MODULE=on
 ENV PATH=${GOPATH}/bin:/usr/local/go/bin/:${PATH}
+
+ENV GOPATH=/build/go
+ENV GOOS="${TARGET_ARCH}"
+ENV GOARCH=amd64
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
 
 
 FROM build-env AS rbedit-builder
-
-ARG TARGET_ARCH
-
-ENV CGO_ENABLED=0
-ENV GOOS="${TARGET_ARCH}"
-ENV GOARCH=amd64
 
 COPY ./ ./
 
@@ -40,7 +38,7 @@ RUN go build \
     -ldflags "-s -w"
 
 
-FROM rbedit-builder AS rbedit
+FROM scratch AS rbedit
 
 COPY --from=rbedit-builder /build/rbedit /
 

@@ -17,6 +17,7 @@ func main() {
 	subcommands.Register(&commands.GetCmd{}, "")
 	subcommands.Register(&commands.PutCmd{}, "")
 	subcommands.Register(&commands.MapCmd{}, "")
+	subcommands.Register(&commands.TorrentCmd{}, "")
 
 	// TODO: Add checks to make sure key order is preserved (do in bencode module).
 	// TODO: Disable scientific notation and float, unless passed a flag.

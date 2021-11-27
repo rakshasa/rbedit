@@ -21,6 +21,15 @@ func AsMap(obj interface{}) (map[string]interface{}, bool) {
 	return m, ok
 }
 
+func AsAbsoluteURI(obj interface{}) (string, bool) {
+	s, ok := obj.(string)
+	if !ok || !VerifyAbsoluteURI(s) {
+		return "", false
+	}
+
+	return s, true
+}
+
 func AsString(obj interface{}) (string, bool) {
 	s, ok := obj.(string)
 	return s, ok

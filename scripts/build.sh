@@ -2,6 +2,9 @@
 
 set -eux
 
+: "${RBEDIT_ARCH:-linux}"
+: "${RBEDIT_BUILD_IMAGE:-build-env}"
+
 project_root="$(cd "$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)" >/dev/null 2>&1 && pwd)"
 readonly project_root
 
@@ -10,7 +13,7 @@ readonly rbedit_image="rtdo/rbedit"
 
 build_dir=$(mktemp -d); readonly build_dir
 
-case "${RBEDIT_ARCH:-linux}" in
+case "${RBEDIT_ARCH}" in
   "darwin")
     ;;
   "linux")
@@ -49,13 +52,38 @@ cleanup() {
 }
 trap cleanup EXIT 1 3 6 8 11 14 15 20 26
 
+dockerfile_no_builder() {
+  sed -n -e '/ AS rbedit-builder$/,$p' Dockerfile | sed "s|^FROM build-env AS rbedit-builder\$|FROM \"${RBEDIT_BUILD_IMAGE}\" AS rbedit-builder|"
+}
+
 cd "${project_root}"
 
 git clone --depth 1 file://"${project_root}" "${build_dir}"
 
+if [[ "${RBEDIT_BUILD_IMAGE}" == "build-env" ]]; then
+  docker build \
+    --progress plain \
+    --file "./Dockerfile" \
+    --target "rbedit" \
+    --tag "${rbedit_image}"\
+    --build-arg "TARGET_ARCH=${RBEDIT_ARCH}" \
+    .
+
+  readonly build_file="./Dockerfile"
+else
+  echo "Using '${RBEDIT_BUILD_IMAGE} build image."
+
+  readonly build_file="./build/dockerfile.build"
+  dockerfile_no_builder > "${build_file}"
+
+  echo
+  cat "${build_file}"
+  echo
+fi
+
 docker build \
   --progress plain \
-  --file "./Dockerfile" \
+  --file "${build_file}" \
   --target "rbedit" \
   --tag "${rbedit_image}"\
   --build-arg "TARGET_ARCH=${RBEDIT_ARCH}" \
