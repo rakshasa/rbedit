@@ -115,3 +115,26 @@ func (c *CommandBase) putString(str string) error {
 	c.value = str
 	return nil
 }
+
+func (c *CommandBase) announceListWithCategory(f *flag.FlagSet) (interface{}, objects.AnnounceList, *objects.AnnounceCategory, ExitStatusError) {
+	categoryIdx, statusErr := categoryIndexFromArgs(f)
+	if statusErr != nil {
+		return nil, objects.AnnounceList{}, nil, statusErr
+	}
+
+	rootObj, obj, statusErr := c.loadRootWithKeyPath(announceListPath)
+	if statusErr != nil {
+		return nil, objects.AnnounceList{}, nil, statusErr
+	}
+
+	announceList, err := objects.NewAnnounceList(obj)
+	if err != nil {
+		return nil, objects.AnnounceList{}, nil, &exitUsageError{msg: fmt.Sprintf("could not verify announce-list, %v", err)}
+	}
+
+	if categoryIdx >= len(announceList.Categories()) {
+		return nil, objects.AnnounceList{}, nil, &exitUsageError{msg: "category index out-of-bounds"}
+	}
+
+	return rootObj, announceList, announceList.Categories()[categoryIdx], nil
+}

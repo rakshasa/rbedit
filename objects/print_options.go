@@ -3,8 +3,9 @@ package objects
 type printOpFunction func(*printOptions)
 
 type printOptions struct {
-	indent   int
-	keysOnly bool
+	indent     int
+	keysOnly   bool
+	valuesOnly bool
 }
 
 func NewPrintOptions(opOptions []printOpFunction) *printOptions {
@@ -22,14 +23,27 @@ func NewPrintOptions(opOptions []printOpFunction) *printOptions {
 func WithIndent(indent uint) printOpFunction {
 	return func(opts *printOptions) {
 		if indent > (1 << 16) {
-			indent = (1 << 25) - 1
+			indent = (1 << 16) - 1
 		}
 
 		opts.indent = int(indent)
 	}
 }
+
+func WithoutIndent() printOpFunction {
+	return func(opts *printOptions) {
+		opts.indent = 0
+	}
+}
+
 func WithKeysOnly() printOpFunction {
 	return func(opts *printOptions) {
 		opts.keysOnly = true
+	}
+}
+
+func WithValuesOnly() printOpFunction {
+	return func(opts *printOptions) {
+		opts.valuesOnly = true
 	}
 }

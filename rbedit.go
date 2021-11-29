@@ -23,6 +23,7 @@ func main() {
 	subcommands.Register(&commands.GetCmd{}, bencodeCategory)
 	subcommands.Register(&commands.PutCmd{}, bencodeCategory)
 	subcommands.Register(&commands.AnnounceCmd{}, bittorrentCategory)
+	subcommands.Register(&commands.AnnounceListCmd{}, bittorrentCategory)
 
 	// TODO: Disable scientific notation and float, unless passed a flag.
 

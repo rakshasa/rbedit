@@ -56,9 +56,9 @@ dockerfile_no_builder() {
   sed -n -e '/ AS rbedit-builder$/,$p' Dockerfile | sed "s|^FROM build-env AS rbedit-builder\$|FROM \"${RBEDIT_BUILD_IMAGE}\" AS rbedit-builder|"
 }
 
-cd "${project_root}"
+cd "${build_dir}"
 
-git clone --depth 1 file://"${project_root}" "${build_dir}"
+git clone --depth 1 file://"${project_root}" ./
 
 if [[ "${RBEDIT_BUILD_IMAGE}" == "build-env" ]]; then
   docker build \
@@ -73,7 +73,7 @@ if [[ "${RBEDIT_BUILD_IMAGE}" == "build-env" ]]; then
 else
   echo "Using '${RBEDIT_BUILD_IMAGE} build image."
 
-  readonly build_file="./build/dockerfile.build"
+  readonly build_file="./dockerfile.build"
   dockerfile_no_builder > "${build_file}"
 
   echo
@@ -93,8 +93,7 @@ docker create -i --rm \
   --name "${container}" \
   "${rbedit_image}"
 
-mkdir -p ./build
-
-docker cp "${container}:/rbedit" ./build/
+mkdir -p "${project_root}/build/"
+docker cp "${container}:/rbedit" "${project_root}/build/"
 
 success="yes"

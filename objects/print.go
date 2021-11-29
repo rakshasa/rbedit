@@ -10,13 +10,21 @@ func PrintObject(obj interface{}, options ...printOpFunction) {
 	fmt.Printf("%s\n", strings.Join(strs, "\n"))
 }
 
+func PrintList(listObj []interface{}, options ...printOpFunction) {
+	opts := NewPrintOptions(options)
+
+	for _, uriStr := range sprintList(listObj, opts) {
+		fmt.Printf("%s\n", uriStr)
+	}
+}
+
 func PrintListObject(obj interface{}, options ...printOpFunction) error {
-	l, ok := AsList(obj)
+	listObj, ok := AsList(obj)
 	if !ok {
 		return fmt.Errorf("object is not a list")
 	}
 
-	fmt.Printf("%s\n", sprintList(l, NewPrintOptions(options)))
+	PrintList(listObj, options...)
 	return nil
 }
 

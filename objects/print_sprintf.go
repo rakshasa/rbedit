@@ -32,7 +32,10 @@ func sprintList(l []interface{}, opts *printOptions) []string {
 	for idx, obj := range l {
 		objStrs := sprintObjectAsList(obj, opts)
 
-		strs = append(strs, fmt.Sprintf("%d:", idx))
+		if !opts.valuesOnly {
+			strs = append(strs, fmt.Sprintf("%d:", idx))
+		}
+
 		for _, s := range objStrs {
 			strs = append(strs, fmt.Sprintf("%s%s", indent, s))
 		}
