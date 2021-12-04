@@ -11,7 +11,7 @@ readonly build_image="rtdo/build/rbedit"
 readonly dependencies=(
   # github.com/jackpal/bencode-go@v1.0.0
   github.com/rakshasa/bencode-go@v1.0.1
-  github.com/google/subcommands@v1.2.0
+  github.com/spf13/cobra@v1.2.1
 )
 
 build_dir=$(mktemp -d); readonly build_dir

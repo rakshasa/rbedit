@@ -49,7 +49,7 @@ func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 
 	if m, ok := AsMap(parentObj); ok {
 		if childObj, ok = m[childKey]; !ok {
-			return nil, fmt.Errorf("could not find key path object")
+			return nil, fmt.Errorf("could not find key path object in map")
 		}
 	} else if l, ok := AsList(parentObj); ok {
 		idx, err := strconv.Atoi(childKey)
@@ -61,10 +61,10 @@ func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 		}
 
 		if childObj = l[idx]; !ok {
-			return nil, fmt.Errorf("could not find key path object")
+			return nil, fmt.Errorf("not find key path object in list")
 		}
 	} else {
-		return nil, fmt.Errorf("key path objects except the last must be a map or a list")
+		return nil, fmt.Errorf("non-terminating path element is not a key or list")
 	}
 
 	return LookupKeyPath(childObj, keys[1:])
@@ -84,8 +84,9 @@ func SetObject(parentObj, setObj interface{}, keys []string) (interface{}, error
 	var childObj interface{}
 
 	if m, ok := AsMap(parentObj); ok {
-		if childObj, ok = m[childKey]; !ok {
-			return nil, fmt.Errorf("could not find key path object")
+		childObj, ok = m[childKey]
+		if !ok && len(keys) != 1 {
+			return nil, fmt.Errorf("could not find key path object in map")
 		}
 
 		childObj, err := SetObject(childObj, setObj, keys[1:])
@@ -106,7 +107,7 @@ func SetObject(parentObj, setObj interface{}, keys []string) (interface{}, error
 		}
 
 		if childObj = l[idx]; !ok {
-			return nil, fmt.Errorf("could not find key path object")
+			return nil, fmt.Errorf("could not find key path object in list")
 		}
 
 		childObj, err := SetObject(childObj, setObj, keys[1:])
@@ -118,7 +119,7 @@ func SetObject(parentObj, setObj interface{}, keys []string) (interface{}, error
 		parentObj = l
 
 	} else {
-		return nil, fmt.Errorf("key path objects except the last must be a map or a list")
+		return nil, fmt.Errorf("non-terminating path element is not a key or list")
 	}
 
 	return parentObj, nil
