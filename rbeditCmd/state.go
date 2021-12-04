@@ -11,14 +11,6 @@ const (
 	stateKeyPrefixKey = "state-key-prefix"
 )
 
-func addStateKeyPrefixToCommand(cmd *cobra.Command, stateKeyPrefix string) {
-	if cmd.Annotations == nil {
-		cmd.Annotations = make(map[string]string)
-	}
-
-	cmd.Annotations[stateKeyPrefixKey] = stateKeyPrefix
-}
-
 func stateKeyPrefixFromCommand(cmd *cobra.Command) string {
 	if cmd.Annotations == nil {
 		printCommandErrorAndExit(cmd, fmt.Errorf("command annotation map has not been initialized"))
@@ -88,23 +80,14 @@ func outputStateFromInterface(value interface{}) *outputState {
 
 // Replace 'filePath' with a special objects.Input interface.
 func (s *outputState) execute(rootObj interface{}, filePath string) error {
-	var err error
-	var output objects.Output
+	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
 
-	if !s.inplace {
-		return fmt.Errorf("no bencode output")
+	metadata := objects.OutputMetadata{
+		InputFilename: filePath,
+		Inplace:       s.inplace,
 	}
 
-	if len(filePath) == 0 {
-		return fmt.Errorf("inplace output requires file inputs")
-	}
-
-	output, err = objects.NewFileOutput()
-	if err != nil {
-		return err
-	}
-
-	return output.Execute(rootObj, filePath)
+	return output.Execute(rootObj, metadata)
 }
 
 // Value State:

@@ -8,84 +8,75 @@ import (
 	bencode "github.com/rakshasa/bencode-go"
 )
 
+type EncodeFunc func(interface{}) ([]byte, error)
+type OutputFunc func([]byte, OutputMetadata) error
+
 type Output interface {
-	Execute(obj interface{}, path string) error
+	Execute(object interface{}, metadata OutputMetadata) error
 }
 
-type outputWrite struct {
-	path string
-	obj  interface{}
+type OutputMetadata struct {
+	InputFilename string
+	Inplace       bool
 }
 
-type outputWait struct {
-	path string
-	err  error
+// SingleOutput:
+
+type singleOutput struct {
+	encodeFn func(interface{}) ([]byte, error)
+	outputFn func([]byte, OutputMetadata) error
 }
 
-type fileOutput struct {
-	writeChan chan outputWrite
-	waitChan  chan outputWait
+func NewSingleOutput(encodeFn EncodeFunc, outputFn OutputFunc) *singleOutput {
+	return &singleOutput{
+		encodeFn: encodeFn,
+		outputFn: outputFn,
+	}
 }
 
-func NewFileOutput() (*fileOutput, error) {
-	output := &fileOutput{
-		writeChan: make(chan outputWrite),
-		waitChan:  make(chan outputWait),
+func (o *singleOutput) Execute(object interface{}, metadata OutputMetadata) error {
+	data, err := o.encodeFn(object)
+	if err != nil {
+		return fmt.Errorf("failed to encode object for output: %v", err)
 	}
 
-	go func() {
-		pathObj, ok := <-output.writeChan
-		if !ok {
-			output.waitChan <- outputWait{path: pathObj.path, err: fmt.Errorf("failed to output file, channel is closed")}
-			return
-		}
-
-		file, err := os.OpenFile(pathObj.path, os.O_WRONLY, 0666)
-		if err != nil {
-			output.waitChan <- outputWait{path: pathObj.path, err: fmt.Errorf("could not open file for bencode decoding: %v", err)}
-			return
-		}
-		defer file.Close()
-
-		var buf bytes.Buffer
-
-		err = bencode.Marshal(&buf, pathObj.obj)
-		if err != nil {
-			output.waitChan <- outputWait{path: pathObj.path, err: fmt.Errorf("failed to encode data: %v", err)}
-			return
-		}
-
-		reader := bytes.NewReader(buf.Bytes())
-
-		count, err := file.ReadFrom(reader)
-		if err != nil {
-			output.waitChan <- outputWait{path: pathObj.path, err: fmt.Errorf("failed to write to output: %v", err)}
-			return
-		}
-		if count != int64(reader.Size()) {
-			output.waitChan <- outputWait{path: pathObj.path, err: fmt.Errorf("failed to write whole file to output: %d != %d", count, reader.Size())}
-			return
-		}
-
-		output.waitChan <- outputWait{path: pathObj.path}
-
-		close(output.waitChan)
-		return
-	}()
-
-	return output, nil
-}
-
-func (f *fileOutput) Execute(obj interface{}, path string) error {
-	f.writeChan <- outputWrite{path: path, obj: obj}
-
-	pathObj, ok := <-f.waitChan
-	if !ok {
-		return fmt.Errorf("failed to output file, channel is closed")
-	}
-	if pathObj.err != nil {
-		return pathObj.err
+	if err := o.outputFn(data, metadata); err != nil {
+		return fmt.Errorf("failed to write encoded object to output: %v", err)
 	}
 
 	return nil
+}
+
+// EncodeFunc:
+
+func NewEncodeBencode() EncodeFunc {
+	return func(object interface{}) ([]byte, error) {
+		var buf bytes.Buffer
+
+		if err := bencode.Marshal(&buf, object); err != nil {
+			return nil, fmt.Errorf("failed to encode data: %v", err)
+		}
+
+		return buf.Bytes(), nil
+	}
+}
+
+// OutputFunc:
+
+func NewFileOutput() OutputFunc {
+	return func(data []byte, metadata OutputMetadata) error {
+		if !metadata.Inplace {
+			return fmt.Errorf("output to file only supports inplace write")
+		}
+		if len(metadata.InputFilename) == 0 {
+			return fmt.Errorf("output to file requires a valid input filename")
+		}
+		path := metadata.InputFilename
+
+		if err := os.WriteFile(path, data, 0666); err != nil {
+			return fmt.Errorf("failed to write to output: %v", err)
+		}
+
+		return nil
+	}
 }

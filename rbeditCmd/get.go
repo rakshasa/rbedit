@@ -12,14 +12,13 @@ import (
 
 func newGetCommand(ctx context.Context) (*cobra.Command, context.Context) {
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "get [OPTIONS] [KEY-PATH]...",
 		Short: "Get object",
-		Long: `
-Get object`,
-		Run: getCmdRun,
+		Run:   getCmdRun,
 	}
 
-	addStateKeyPrefixToCommand(cmd, "rbedit-get-state")
+	setupDefaultCommand(cmd, "rbedit-get-state")
+
 	addInputFlags(ctx, cmd)
 
 	return cmd, ctx

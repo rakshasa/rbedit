@@ -12,33 +12,55 @@ var (
 	announceListPath = []string{"announce-list"}
 )
 
+// AnnounceListCmd:
+
+func newAnnounceListCommand(ctx context.Context) (*cobra.Command, context.Context) {
+	cmd := &cobra.Command{
+		Use:   "announce-list COMMAND",
+		Short: "BitTorrent announce-list related commands",
+		Args:  cobra.ExactArgs(0),
+		Run:   func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
+	}
+
+	setupDefaultCommand(cmd, "rbedit-announce-list")
+
+	ctx = addCommand(ctx, cmd, newAnnounceListAppendTrackerCommand)
+	ctx = addCommand(ctx, cmd, newAnnounceListGetCommand)
+	ctx = addCommand(ctx, cmd, newAnnounceListGetCategoryCommand)
+
+	return cmd, ctx
+}
+
 // AnnounceListAppendTrackerCmd:
 
 func newAnnounceListAppendTrackerCommand(ctx context.Context) (*cobra.Command, context.Context) {
 	cmd := &cobra.Command{
-		Use:   "append-tracker",
-		Short: "Append tracker to category",
-		Long: `
-Append tracker to category`,
-		Args: cobra.ExactArgs(1),
-		Run:  announceListAppendTrackerCmdRun,
+		Use:   "append-tracker [OPTIONS] INDEX URI...",
+		Short: "Append tracker(s) to a category index",
+		Args:  cobra.MinimumNArgs(2),
+		Run:   announceListAppendTrackerCmdRun,
 	}
 
-	addStateKeyPrefixToCommand(cmd, "rbedit-announce-list-append-tracker-state")
+	setupDefaultCommand(cmd, "rbedit-announce-list-append-tracker-state")
+
 	addInputFlags(ctx, cmd)
 	addOutputFlags(ctx, cmd)
-	// TODO: Use arg not flag.
-	addURIFlags(ctx, cmd)
 
 	return cmd, ctx
 }
 
 func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
-	categoryIdx, err := categoryIndexFromArgs(args)
+	categoryIdx, err := categoryIndexFromArgs(args[:1])
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
-
+	trackers := []string{}
+	for idx, t := range args[1:] {
+		if !objects.VerifyAbsoluteURI(t) {
+			printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI for tracker %d\n", idx))
+		}
+		trackers = append(trackers, t)
+	}
 	input := contextInputFromCommand(cmd)
 	if input == nil {
 		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
@@ -46,10 +68,6 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	output := contextOutputFromCommand(cmd)
 	if output == nil {
 		printCommandErrorAndExit(cmd, fmt.Errorf("no output target"))
-	}
-	uri := contextURIFromCommand(cmd)
-	if output == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no tracker URI"))
 	}
 
 	if err := input.execute(func(rootObj interface{}) error {
@@ -66,7 +84,9 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 			printCommandErrorAndExit(cmd, fmt.Errorf("category index out-of-bounds"))
 		}
 
-		(*announceList.Categories()[categoryIdx]).AppendURI(uri.String())
+		for _, t := range trackers {
+			(*announceList.Categories()[categoryIdx]).AppendURI(t)
+		}
 
 		rootObj, err = objects.SetObject(rootObj, announceList.ToListObject(), announceListPath)
 		if err != nil {
@@ -83,38 +103,18 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-// AnnounceListCmd:
-
-func newAnnounceListCommand(ctx context.Context) (*cobra.Command, context.Context) {
-	cmd := &cobra.Command{
-		Use:   "announce-list",
-		Short: "BitTorrent announce-list related commands",
-		Long: `
-BitTorrent announce-list related commands`,
-		Args: cobra.ExactArgs(0),
-		Run:  func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
-	}
-
-	ctx = addCommand(ctx, cmd, newAnnounceListAppendTrackerCommand)
-	ctx = addCommand(ctx, cmd, newAnnounceListGetCommand)
-	ctx = addCommand(ctx, cmd, newAnnounceListGetCategoryCommand)
-
-	return cmd, ctx
-}
-
 // AnnounceListGetCmd:
 
 func newAnnounceListGetCommand(ctx context.Context) (*cobra.Command, context.Context) {
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "get [OPTIONS]",
 		Short: "Get announce-list url",
-		Long: `
-Get announce-list url`,
-		Args: cobra.ExactArgs(0),
-		Run:  announceListGetCmdRun,
+		Args:  cobra.ExactArgs(0),
+		Run:   announceListGetCmdRun,
 	}
 
-	addStateKeyPrefixToCommand(cmd, "rbedit-announce-list-get-state")
+	setupDefaultCommand(cmd, "rbedit-announce-list-get-state")
+
 	addInputFlags(ctx, cmd)
 
 	return cmd, ctx
@@ -148,15 +148,14 @@ func announceListGetCmdRun(cmd *cobra.Command, args []string) {
 
 func newAnnounceListGetCategoryCommand(ctx context.Context) (*cobra.Command, context.Context) {
 	cmd := &cobra.Command{
-		Use:   "get-category",
+		Use:   "get-category [OPTIONS] INDEX",
 		Short: "Get announce-list category",
-		Long: `
-Get announce-list category`,
-		Args: cobra.ExactArgs(1),
-		Run:  announceListGetCategoryCmdRun,
+		Args:  cobra.ExactArgs(1),
+		Run:   announceListGetCategoryCmdRun,
 	}
 
-	addStateKeyPrefixToCommand(cmd, "rbedit-announce-list-get-category-state")
+	setupDefaultCommand(cmd, "rbedit-announce-list-get-category-state")
+
 	addInputFlags(ctx, cmd)
 
 	return cmd, ctx

@@ -12,15 +12,14 @@ import (
 
 func newPutCommand(ctx context.Context) (*cobra.Command, context.Context) {
 	cmd := &cobra.Command{
-		Use:   "put",
+		Use:   "put [OPTIONS] KEY-PATH...",
 		Short: "Put object",
-		Long: `
-Put object`,
-		Args: cobra.MinimumNArgs(1),
-		Run:  putCmdRun,
+		Args:  cobra.MinimumNArgs(1),
+		Run:   putCmdRun,
 	}
 
-	addStateKeyPrefixToCommand(cmd, "rbedit-put-state")
+	setupDefaultCommand(cmd, "rbedit-put-state")
+
 	addInputFlags(ctx, cmd)
 	addOutputFlags(ctx, cmd)
 	addAnyValueFlags(ctx, cmd)
