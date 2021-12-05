@@ -39,6 +39,7 @@ func setupDefaultCommand(cmd *cobra.Command, stateKeyPrefix string) {
 	cmd.Long = "\n" + cmd.Short
 	cmd.Annotations[stateKeyPrefixKey] = stateKeyPrefix
 	cmd.DisableFlagsInUseLine = true
+	cmd.TraverseChildren = true
 
 	cmd.SetUsageTemplate(defaultUsageTemplate)
 }

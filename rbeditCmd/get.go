@@ -2,7 +2,6 @@ package rbeditCmd
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
@@ -27,12 +26,14 @@ func newGetCommand(ctx context.Context) (*cobra.Command, context.Context) {
 func getCmdRun(cmd *cobra.Command, args []string) {
 	keyPath := args
 
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
+	metadata, err := metadataFromCommand(cmd, WithInput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, keyPath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)

@@ -2,7 +2,6 @@ package rbeditCmd
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
@@ -30,27 +29,21 @@ func newPutCommand(ctx context.Context) (*cobra.Command, context.Context) {
 func putCmdRun(cmd *cobra.Command, args []string) {
 	keyPath := args
 
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
-	}
-	output := contextOutputFromCommand(cmd)
-	if output == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no output target"))
-	}
-	value := contextAnyValueFromCommand(cmd)
-	if output == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no value"))
+	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput(), WithURIValue())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
-		// TODO: Fix value to return any object.
-		rootObj, err := objects.SetObject(rootObj, value.value, keyPath)
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
+		rootObj, err := objects.SetObject(rootObj, metadata.Value, keyPath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
 
-		if err := output.execute(rootObj, input.filePath); err != nil {
+		if err := output.Execute(rootObj, metadata); err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
 

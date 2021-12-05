@@ -61,16 +61,16 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 		}
 		trackers = append(trackers, t)
 	}
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
-	}
-	output := contextOutputFromCommand(cmd)
-	if output == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no output target"))
+
+	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
@@ -92,7 +92,7 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
-		if err := output.execute(rootObj, input.filePath); err != nil {
+		if err := output.Execute(rootObj, metadata); err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
 
@@ -121,12 +121,14 @@ func newAnnounceListGetCommand(ctx context.Context) (*cobra.Command, context.Con
 }
 
 func announceListGetCmdRun(cmd *cobra.Command, args []string) {
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
+	metadata, err := metadataFromCommand(cmd, WithInput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
@@ -167,12 +169,14 @@ func announceListGetCategoryCmdRun(cmd *cobra.Command, args []string) {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
+	metadata, err := metadataFromCommand(cmd, WithInput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)

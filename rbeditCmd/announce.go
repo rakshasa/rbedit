@@ -48,12 +48,14 @@ func newAnnounceGetCommand(ctx context.Context) (*cobra.Command, context.Context
 }
 
 func announceGetCmdRun(cmd *cobra.Command, args []string) {
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
+	metadata, err := metadataFromCommand(cmd, WithInput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, announcePath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
@@ -94,22 +96,22 @@ func announcePutCmdRun(cmd *cobra.Command, args []string) {
 	if !objects.VerifyAbsoluteURI(tracker) {
 		printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI"))
 	}
-	input := contextInputFromCommand(cmd)
-	if input == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no input source"))
-	}
-	output := contextOutputFromCommand(cmd)
-	if output == nil {
-		printCommandErrorAndExit(cmd, fmt.Errorf("no output target"))
+
+	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+	if err != nil {
+		printCommandErrorAndExit(cmd, err)
 	}
 
-	if err := input.execute(func(rootObj interface{}) error {
+	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+
+	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
 		rootObj, err := objects.SetObject(rootObj, tracker, announcePath)
 		if err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
 
-		if err := output.execute(rootObj, input.filePath); err != nil {
+		if err := output.Execute(rootObj, metadata); err != nil {
 			printCommandErrorAndExit(cmd, err)
 		}
 

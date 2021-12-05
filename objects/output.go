@@ -9,22 +9,17 @@ import (
 )
 
 type EncodeFunc func(interface{}) ([]byte, error)
-type OutputFunc func([]byte, OutputMetadata) error
+type OutputFunc func([]byte, IOMetadata) error
 
 type Output interface {
-	Execute(object interface{}, metadata OutputMetadata) error
-}
-
-type OutputMetadata struct {
-	InputFilename string
-	Inplace       bool
+	Execute(object interface{}, metadata IOMetadata) error
 }
 
 // SingleOutput:
 
 type singleOutput struct {
-	encodeFn func(interface{}) ([]byte, error)
-	outputFn func([]byte, OutputMetadata) error
+	encodeFn EncodeFunc
+	outputFn OutputFunc
 }
 
 func NewSingleOutput(encodeFn EncodeFunc, outputFn OutputFunc) *singleOutput {
@@ -34,14 +29,14 @@ func NewSingleOutput(encodeFn EncodeFunc, outputFn OutputFunc) *singleOutput {
 	}
 }
 
-func (o *singleOutput) Execute(object interface{}, metadata OutputMetadata) error {
+func (o *singleOutput) Execute(object interface{}, metadata IOMetadata) error {
 	data, err := o.encodeFn(object)
 	if err != nil {
-		return fmt.Errorf("failed to encode object for output: %v", err)
+		return err
 	}
 
 	if err := o.outputFn(data, metadata); err != nil {
-		return fmt.Errorf("failed to write encoded object to output: %v", err)
+		return err
 	}
 
 	return nil
@@ -64,17 +59,18 @@ func NewEncodeBencode() EncodeFunc {
 // OutputFunc:
 
 func NewFileOutput() OutputFunc {
-	return func(data []byte, metadata OutputMetadata) error {
+	return func(data []byte, metadata IOMetadata) error {
 		if !metadata.Inplace {
 			return fmt.Errorf("output to file only supports inplace write")
-		}
-		if len(metadata.InputFilename) == 0 {
-			return fmt.Errorf("output to file requires a valid input filename")
 		}
 		path := metadata.InputFilename
 
 		if err := os.WriteFile(path, data, 0666); err != nil {
-			return fmt.Errorf("failed to write to output: %v", err)
+			if pathErr, ok := err.(*os.PathError); ok {
+				err = pathErr.Err
+			}
+
+			return fmt.Errorf("failed to write to output, %v", err)
 		}
 
 		return nil

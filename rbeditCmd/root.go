@@ -30,7 +30,7 @@ func newRootCommand(ctx context.Context) (*cobra.Command, context.Context) {
 }
 
 func Execute(ctx context.Context) {
-	rootCmd, ctx := newRootCommand(initContextFlagStateMap(ctx))
+	rootCmd, ctx := newRootCommand(ctx)
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		os.Exit(1)

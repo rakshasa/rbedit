@@ -1,64 +1,83 @@
 package objects
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 
 	bencode "github.com/rakshasa/bencode-go"
 )
 
+type DecodeFunc func([]byte) (interface{}, error)
+type InputFunc func(IOMetadata) ([]byte, error)
+type InputResultFunc func(interface{}, IOMetadata) error
+
 type Input interface {
 	// Executed once for every distinct root bencoded data object in
 	// the input.
-	Execute(fn func(obj interface{}) error) error
+	Execute(metadata IOMetadata, fn InputResultFunc) error
 }
 
-type inputObjectError struct {
-	obj interface{}
-	err error
+type IOMetadata struct {
+	InputFilename string
+	Inplace       bool
+	Value         interface{}
 }
 
-type fileInput struct {
-	waitChan chan inputObjectError
+// SingleInput:
+
+type singleInput struct {
+	decodeFn DecodeFunc
+	inputFn  InputFunc
 }
 
-func NewFileInput(path string) (*fileInput, error) {
-	file, err := os.OpenFile(path, os.O_RDONLY, 0444)
+func NewSingleInput(decodeFn DecodeFunc, inputFn InputFunc) *singleInput {
+	return &singleInput{
+		decodeFn: decodeFn,
+		inputFn:  inputFn,
+	}
+}
+
+func (o *singleInput) Execute(metadata IOMetadata, resultFn InputResultFunc) error {
+	data, err := o.inputFn(metadata)
 	if err != nil {
-		return nil, fmt.Errorf("could not open file for bencode decoding: %v", err)
+		return err
 	}
 
-	input := &fileInput{
-		waitChan: make(chan inputObjectError),
+	object, err := o.decodeFn(data)
+	if err != nil {
+		return err
 	}
 
-	go func() {
-		defer file.Close()
+	return resultFn(object, metadata)
+}
 
-		obj, err := bencode.Decode(bufio.NewReader(file))
+// DecodeFunc:
+
+func NewDecodeBencode() DecodeFunc {
+	return func(data []byte) (interface{}, error) {
+		object, err := bencode.Decode(bytes.NewReader(data))
 		if err != nil {
-			input.waitChan <- inputObjectError{err: fmt.Errorf("failed to decode bencoded file: %v", err)}
-			return
+			return nil, fmt.Errorf("failed to decode object from input: %v", err)
 		}
 
-		input.waitChan <- inputObjectError{obj: obj}
-
-		close(input.waitChan)
-		return
-	}()
-
-	return input, nil
+		return object, nil
+	}
 }
 
-func (f *fileInput) Execute(fn func(obj interface{}) error) error {
-	objErr, ok := <-f.waitChan
-	if !ok {
-		return fmt.Errorf("failed to execute, channel is closed")
-	}
-	if objErr.err != nil {
-		return fmt.Errorf("failed to execute: %v", objErr.err)
-	}
+// InputFunc:
 
-	return fn(objErr.obj)
+func NewFileInput() InputFunc {
+	return func(metadata IOMetadata) ([]byte, error) {
+		data, err := os.ReadFile(metadata.InputFilename)
+		if err != nil {
+			if pathErr, ok := err.(*os.PathError); ok {
+				err = pathErr.Err
+			}
+
+			return nil, fmt.Errorf("failed to read input, %v", err)
+		}
+
+		return data, nil
+	}
 }
