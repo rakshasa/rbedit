@@ -1,26 +1,23 @@
 package rbeditCmd
 
 import (
-	"context"
-
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
 )
 
 // GetCmd:
 
-func newGetCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [OPTIONS] [KEY-PATH]...",
 		Short: "Get object",
 		Run:   getCmdRun,
 	}
 
-	setupDefaultCommand(cmd, "rbedit-get-state")
+	setupDefaultCommand(cmd)
+	addInputFlags(cmd)
 
-	addInputFlags(ctx, cmd)
-
-	return cmd, ctx
+	return cmd
 }
 
 func getCmdRun(cmd *cobra.Command, args []string) {

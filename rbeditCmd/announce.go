@@ -1,7 +1,6 @@
 package rbeditCmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/rakshasa/rbedit/objects"
@@ -14,7 +13,7 @@ var (
 
 // AnnounceCmd:
 
-func newAnnounceCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newAnnounceCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "announce [OPTIONS] COMMAND",
 		Short: "BitTorrent announce related commands",
@@ -22,17 +21,17 @@ func newAnnounceCommand(ctx context.Context) (*cobra.Command, context.Context) {
 		Run:   func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
 	}
 
-	setupDefaultCommand(cmd, "rbedit-announce")
+	setupDefaultCommand(cmd)
 
-	ctx = addCommand(ctx, cmd, newAnnounceGetCommand)
-	ctx = addCommand(ctx, cmd, newAnnouncePutCommand)
+	cmd.AddCommand(newAnnounceGetCommand())
+	cmd.AddCommand(newAnnouncePutCommand())
 
-	return cmd, ctx
+	return cmd
 }
 
 // AnnounceGetCmd:
 
-func newAnnounceGetCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newAnnounceGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [OPTIONS]",
 		Short: "Get announce url",
@@ -40,11 +39,11 @@ func newAnnounceGetCommand(ctx context.Context) (*cobra.Command, context.Context
 		Run:   announceGetCmdRun,
 	}
 
-	setupDefaultCommand(cmd, "rbedit-announce-get-state")
+	setupDefaultCommand(cmd)
 
-	addInputFlags(ctx, cmd)
+	addInputFlags(cmd)
 
-	return cmd, ctx
+	return cmd
 }
 
 func announceGetCmdRun(cmd *cobra.Command, args []string) {
@@ -75,7 +74,7 @@ func announceGetCmdRun(cmd *cobra.Command, args []string) {
 
 // AnnouncesPutCmd:
 
-func newAnnouncePutCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newAnnouncePutCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "put [OPTIONS] URI",
 		Short: "Set tracker announce URI",
@@ -83,12 +82,12 @@ func newAnnouncePutCommand(ctx context.Context) (*cobra.Command, context.Context
 		Run:   announcePutCmdRun,
 	}
 
-	setupDefaultCommand(cmd, "rbedit-announce-put-state")
+	setupDefaultCommand(cmd)
 
-	addInputFlags(ctx, cmd)
-	addOutputFlags(ctx, cmd)
+	addInputFlags(cmd)
+	addOutputFlags(cmd)
 
-	return cmd, ctx
+	return cmd
 }
 
 func announcePutCmdRun(cmd *cobra.Command, args []string) {

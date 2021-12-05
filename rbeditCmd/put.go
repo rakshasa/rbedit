@@ -1,15 +1,13 @@
 package rbeditCmd
 
 import (
-	"context"
-
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
 )
 
 // PutCmd:
 
-func newPutCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newPutCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "put [OPTIONS] KEY-PATH...",
 		Short: "Put object",
@@ -17,13 +15,12 @@ func newPutCommand(ctx context.Context) (*cobra.Command, context.Context) {
 		Run:   putCmdRun,
 	}
 
-	setupDefaultCommand(cmd, "rbedit-put-state")
+	setupDefaultCommand(cmd)
+	addInputFlags(cmd)
+	addOutputFlags(cmd)
+	addAnyValueFlags(cmd)
 
-	addInputFlags(ctx, cmd)
-	addOutputFlags(ctx, cmd)
-	addAnyValueFlags(ctx, cmd)
-
-	return cmd, ctx
+	return cmd
 }
 
 func putCmdRun(cmd *cobra.Command, args []string) {

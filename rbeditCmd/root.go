@@ -9,7 +9,7 @@ import (
 
 // TODO: Add custom PositionalArgs.
 
-func newRootCommand(ctx context.Context) (*cobra.Command, context.Context) {
+func newRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rbedit [OPTIONS] COMMAND",
 		Short: "A dependency-free bencode editor",
@@ -19,20 +19,18 @@ func newRootCommand(ctx context.Context) (*cobra.Command, context.Context) {
 		Run:     func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
 	}
 
-	setupDefaultCommand(cmd, "rbedit-root-state")
+	setupDefaultCommand(cmd)
 
-	ctx = addCommand(ctx, cmd, newAnnounceCommand)
-	ctx = addCommand(ctx, cmd, newAnnounceListCommand)
-	ctx = addCommand(ctx, cmd, newGetCommand)
-	ctx = addCommand(ctx, cmd, newPutCommand)
+	cmd.AddCommand(newAnnounceCommand())
+	cmd.AddCommand(newAnnounceListCommand())
+	cmd.AddCommand(newGetCommand())
+	cmd.AddCommand(newPutCommand())
 
-	return cmd, ctx
+	return cmd
 }
 
 func Execute(ctx context.Context) {
-	rootCmd, ctx := newRootCommand(ctx)
-
-	if err := rootCmd.ExecuteContext(ctx); err != nil {
+	if err := newRootCommand().ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
 }

@@ -31,23 +31,16 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
 
-func setupDefaultCommand(cmd *cobra.Command, stateKeyPrefix string) {
+func setupDefaultCommand(cmd *cobra.Command) {
 	if cmd.Annotations == nil {
 		cmd.Annotations = make(map[string]string)
 	}
 
 	cmd.Long = "\n" + cmd.Short
-	cmd.Annotations[stateKeyPrefixKey] = stateKeyPrefix
 	cmd.DisableFlagsInUseLine = true
 	cmd.TraverseChildren = true
 
 	cmd.SetUsageTemplate(defaultUsageTemplate)
-}
-
-func addCommand(ctx context.Context, rootCmd *cobra.Command, newCmdFn addCommandFn) context.Context {
-	cmd, ctx := newCmdFn(ctx)
-	rootCmd.AddCommand(cmd)
-	return ctx
 }
 
 func commandPathAsList(cmd *cobra.Command) []string {
