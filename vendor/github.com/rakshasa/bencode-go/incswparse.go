@@ -84,10 +84,10 @@ func unmarshal(data *bufio.Reader) (interface{}, error) {
 
 			key, ok := keyValue.(string)
 			if !ok {
-				return nil, errors.New("bencode: non-string dictionary key")
+				return nil, errors.New("non-string dictionary key")
 			}
 			if prevKey != nil && *prevKey >= key {
-				return nil, errors.New("bencode: unordered dictionary keys")
+				return nil, errors.New("unordered dictionary keys")
 			}
 			prevKey = &key
 

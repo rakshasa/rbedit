@@ -26,7 +26,7 @@ func newPutCommand() *cobra.Command {
 func putCmdRun(cmd *cobra.Command, args []string) {
 	keyPath := args
 
-	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput(), WithURIValue())
+	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput(), WithAnyValue())
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}

@@ -2,8 +2,8 @@
 
 set -eux
 
-: "${RBEDIT_ARCH:-linux}"
-: "${RBEDIT_BUILD_IMAGE:-build-env}"
+RBEDIT_ARCH="${RBEDIT_ARCH:-linux}"
+RBEDIT_BUILD_IMAGE="${RBEDIT_BUILD_IMAGE:-build-env}"
 
 project_root="$(cd "$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)" >/dev/null 2>&1 && pwd)"
 readonly project_root

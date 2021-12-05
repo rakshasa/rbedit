@@ -10,7 +10,7 @@ readonly build_image="rtdo/build/rbedit"
 
 readonly dependencies=(
   # github.com/jackpal/bencode-go@v1.0.0
-  github.com/rakshasa/bencode-go@v1.0.1
+  github.com/rakshasa/bencode-go@v1.0.2
   github.com/spf13/cobra@v1.2.1
 )
 

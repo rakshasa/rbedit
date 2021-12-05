@@ -5,15 +5,16 @@ import (
 
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 )
 
 type metadataOpFunction func(*metadataOptions)
+type metadataGetFlagFunction func(*flag.FlagSet, string) (interface{}, bool, error)
 
 type metadataOptions struct {
-	input        bool
-	output       bool
-	requireValue bool
-	stringValue  bool
+	input    bool
+	output   bool
+	getValue map[string]metadataGetFlagFunction
 }
 
 func newMetadataOptions(opOptions []metadataOpFunction) *metadataOptions {
@@ -38,10 +39,16 @@ func WithOutput() metadataOpFunction {
 	}
 }
 
-func WithURIValue() metadataOpFunction {
+func WithAnyValue() metadataOpFunction {
 	return func(opts *metadataOptions) {
-		opts.requireValue = true
-		opts.stringValue = true
+		if opts.getValue != nil {
+			printErrorAndExit(fmt.Errorf("opts.getValue already initialized"))
+		}
+
+		opts.getValue = map[string]metadataGetFlagFunction{
+			(bencodeValueFlagName): getBencodeValueFromFlag,
+			(stringValueFlagName):  getStringValueFromFlag,
+		}
 	}
 }
 
@@ -51,7 +58,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 	metadata := objects.IOMetadata{}
 
 	if opts.input {
-		value, err := cmd.Flags().GetString("input")
+		value, err := cmd.Flags().GetString(inputFlagName)
 		if err != nil {
 			return objects.IOMetadata{}, fmt.Errorf("no valid input source")
 		}
@@ -60,7 +67,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 	}
 
 	if opts.output {
-		value, err := cmd.Flags().GetBool("inplace")
+		value, err := cmd.Flags().GetBool(inplaceFlagName)
 		if err != nil {
 			return objects.IOMetadata{}, fmt.Errorf("no valid output destination")
 		}
@@ -68,14 +75,26 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 		metadata.Inplace = value
 	}
 
-	if opts.stringValue {
-		if value, err := cmd.Flags().GetString("string"); err == nil {
+	if opts.getValue != nil {
+		for name, fn := range opts.getValue {
+			value, ok, err := fn(cmd.Flags(), name)
+			if err != nil {
+				return objects.IOMetadata{}, fmt.Errorf("could not parse value, %v", err)
+			}
+			if !ok {
+				continue
+			}
+
+			if metadata.Value != nil {
+				return objects.IOMetadata{}, fmt.Errorf("multiple values not supported")
+			}
+
 			metadata.Value = value
 		}
-	}
 
-	if opts.requireValue && metadata.Value == nil {
-		return objects.IOMetadata{}, fmt.Errorf("no value provided")
+		if metadata.Value == nil {
+			return objects.IOMetadata{}, fmt.Errorf("no value provided")
+		}
 	}
 
 	return metadata, nil
