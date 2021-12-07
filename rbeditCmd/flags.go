@@ -1,17 +1,20 @@
 package rbeditCmd
 
 import (
-	"bytes"
+	"strings"
 
 	"github.com/rakshasa/bencode-go"
+	"github.com/rakshasa/rbedit/objects"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )
 
 const (
 	bencodeValueFlagName = "bencode"
+	integerValueFlagName = "int"
 	inplaceFlagName      = "inplace"
 	inputFlagName        = "input"
+	jsonValueFlagName    = "json"
 	stringValueFlagName  = "string"
 )
 
@@ -27,6 +30,8 @@ func addOutputFlags(cmd *cobra.Command) {
 
 func addAnyValueFlags(cmd *cobra.Command) {
 	cmd.Flags().String(bencodeValueFlagName, "", "Bencoded value")
+	cmd.Flags().Int64(integerValueFlagName, 0, "Integer value")
+	cmd.Flags().String(jsonValueFlagName, "", "JSON value")
 	cmd.Flags().String(stringValueFlagName, "", "String value")
 }
 
@@ -42,7 +47,38 @@ func getBencodeValueFromFlag(flags *flag.FlagSet, name string) (interface{}, boo
 		return nil, false, err
 	}
 
-	object, err := bencode.Decode(bytes.NewReader([]byte(value)))
+	object, err := bencode.Decode(strings.NewReader(value))
+	if err != nil {
+		return nil, false, err
+	}
+
+	return object, true, nil
+}
+
+func getIntegerValueFromFlag(flags *flag.FlagSet, name string) (interface{}, bool, error) {
+	if !flags.Changed(name) {
+		return nil, false, nil
+	}
+
+	value, err := flags.GetInt64(name)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return value, true, nil
+}
+
+func getJSONValueFromFlag(flags *flag.FlagSet, name string) (interface{}, bool, error) {
+	if !flags.Changed(name) {
+		return nil, false, nil
+	}
+
+	data, err := flags.GetString(name)
+	if err != nil {
+		return nil, false, err
+	}
+
+	object, err := objects.ConvertJSONToBencodeObject(data)
 	if err != nil {
 		return nil, false, err
 	}

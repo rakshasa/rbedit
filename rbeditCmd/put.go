@@ -11,7 +11,6 @@ func newPutCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "put [OPTIONS] KEY-PATH...",
 		Short: "Put object",
-		Args:  cobra.MinimumNArgs(1),
 		Run:   putCmdRun,
 	}
 
@@ -24,6 +23,10 @@ func newPutCommand() *cobra.Command {
 }
 
 func putCmdRun(cmd *cobra.Command, args []string) {
+	if len(args) == 0 && !hasChangedFlags(cmd) {
+		printCommandUsageAndExit(cmd)
+	}
+
 	keyPath := args
 
 	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput(), WithAnyValue())

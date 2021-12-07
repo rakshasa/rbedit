@@ -18,7 +18,7 @@ func newAnnounceCommand() *cobra.Command {
 		Use:   "announce [OPTIONS] COMMAND",
 		Short: "BitTorrent announce related commands",
 		Args:  cobra.ExactArgs(0),
-		Run:   func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
+		Run:   func(cmd *cobra.Command, args []string) { printCommandUsageAndExit(cmd) },
 	}
 
 	setupDefaultCommand(cmd)

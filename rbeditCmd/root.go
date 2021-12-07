@@ -16,7 +16,7 @@ func newRootCommand() *cobra.Command {
 		// TODO: Use git tag or commit.
 		Version: "0.0",
 		Args:    cobra.ExactArgs(0),
-		Run:     func(cmd *cobra.Command, args []string) { printCommandUsage(cmd) },
+		Run:     func(cmd *cobra.Command, args []string) { printCommandUsageAndExit(cmd) },
 	}
 
 	setupDefaultCommand(cmd)

@@ -15,9 +15,10 @@ func checkValidStateOrExit(cmd *cobra.Command, ok bool) {
 	}
 }
 
-func printCommandUsage(cmd *cobra.Command) {
+func printCommandUsageAndExit(cmd *cobra.Command) {
 	fmt.Printf("%s\n\n", cmd.Long)
 	cmd.Usage()
+	os.Exit(0)
 }
 
 func printErrorAndExit(err error) {

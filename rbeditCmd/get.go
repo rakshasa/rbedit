@@ -21,6 +21,10 @@ func newGetCommand() *cobra.Command {
 }
 
 func getCmdRun(cmd *cobra.Command, args []string) {
+	if len(args) == 0 && !hasChangedFlags(cmd) {
+		printCommandUsageAndExit(cmd)
+	}
+
 	keyPath := args
 
 	metadata, err := metadataFromCommand(cmd, WithInput())

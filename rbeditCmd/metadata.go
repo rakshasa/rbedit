@@ -47,9 +47,21 @@ func WithAnyValue() metadataOpFunction {
 
 		opts.getValue = map[string]metadataGetFlagFunction{
 			(bencodeValueFlagName): getBencodeValueFromFlag,
+			(integerValueFlagName): getIntegerValueFromFlag,
+			(jsonValueFlagName):    getJSONValueFromFlag,
 			(stringValueFlagName):  getStringValueFromFlag,
 		}
 	}
+}
+
+func hasChangedFlags(cmd *cobra.Command) bool {
+	var result bool
+
+	cmd.Flags().Visit(func(f *flag.Flag) {
+		result = true
+	})
+
+	return result
 }
 
 func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (objects.IOMetadata, error) {
@@ -59,7 +71,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 
 	if opts.input {
 		value, err := cmd.Flags().GetString(inputFlagName)
-		if err != nil {
+		if err != nil || len(value) == 0 {
 			return objects.IOMetadata{}, fmt.Errorf("no valid input source")
 		}
 
@@ -68,7 +80,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 
 	if opts.output {
 		value, err := cmd.Flags().GetBool(inplaceFlagName)
-		if err != nil {
+		if err != nil || !value {
 			return objects.IOMetadata{}, fmt.Errorf("no valid output destination")
 		}
 
