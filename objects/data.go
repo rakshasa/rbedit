@@ -2,7 +2,6 @@ package objects
 
 import (
 	"fmt"
-	"strconv"
 )
 
 // Add float and uinteger:
@@ -52,12 +51,9 @@ func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 			return nil, fmt.Errorf("could not find key path object in map")
 		}
 	} else if l, ok := AsList(parentObj); ok {
-		idx, err := strconv.Atoi(childKey)
+		idx, err := stringToIntInRange(childKey, 0, len(l))
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert key path element to list index")
-		}
-		if idx < 0 || idx >= len(l) {
-			return nil, fmt.Errorf("invalid list index number")
+			return nil, fmt.Errorf("invalid key '%s', %v", childKey, err)
 		}
 
 		if childObj = l[idx]; !ok {
@@ -70,57 +66,106 @@ func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 	return LookupKeyPath(childObj, keys[1:])
 }
 
-// Returns the root object with the modified key path object.
-func SetObject(parentObj, setObj interface{}, keys []string) (interface{}, error) {
-	if len(keys) == 0 {
-		return setObj, nil
+func changeObject(parentObj interface{}, parentKeys []string, changeFn func(parentObj interface{}) (interface{}, error)) (interface{}, error) {
+	if len(parentKeys) == 0 {
+		return changeFn(parentObj)
 	}
 
-	childKey := keys[0]
+	childKey := parentKeys[0]
 	if len(childKey) == 0 {
 		return nil, fmt.Errorf("empty key path element")
 	}
 
-	var childObj interface{}
-
 	if m, ok := AsMap(parentObj); ok {
-		childObj, ok = m[childKey]
-		if !ok && len(keys) != 1 {
+		childObj, ok := m[childKey]
+		if !ok {
 			return nil, fmt.Errorf("could not find key path object in map")
 		}
 
-		childObj, err := SetObject(childObj, setObj, keys[1:])
+		childObj, err := changeObject(childObj, parentKeys[1:], changeFn)
 		if err != nil {
 			return nil, err
 		}
 
 		m[childKey] = childObj
-		parentObj = m
+		return m, nil
 
 	} else if l, ok := AsList(parentObj); ok {
-		idx, err := strconv.Atoi(childKey)
+		idx, err := stringToIntInRange(childKey, 0, len(l))
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert key path element to list index")
-		}
-		if idx < 0 || idx >= len(l) {
-			return nil, fmt.Errorf("invalid list index number")
+			return nil, fmt.Errorf("invalid key '%s', %v", childKey, err)
 		}
 
-		if childObj = l[idx]; !ok {
-			return nil, fmt.Errorf("could not find key path object in list")
-		}
-
-		childObj, err := SetObject(childObj, setObj, keys[1:])
+		childObj, err := changeObject(l[idx], parentKeys[1:], changeFn)
 		if err != nil {
 			return nil, err
 		}
 
 		l[idx] = childObj
-		parentObj = l
+		return l, nil
 
 	} else {
 		return nil, fmt.Errorf("non-terminating path element is not a key or list")
 	}
+}
 
-	return parentObj, nil
+// Returns the root object with the modified key path object.
+func RemoveObject(rootObj interface{}, keys []string) (interface{}, error) {
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("empty keys")
+	}
+
+	lastKey := keys[len(keys)-1]
+	if len(lastKey) == 0 {
+		return nil, fmt.Errorf("empty last key")
+	}
+
+	return changeObject(rootObj, keys[:len(keys)-1], func(parentObj interface{}) (interface{}, error) {
+		if m, ok := AsMap(parentObj); ok {
+			delete(m, lastKey)
+			return m, nil
+
+		} else if l, ok := AsList(parentObj); ok {
+			idx, err := stringToIntInRange(lastKey, 0, len(l))
+			if err != nil {
+				return nil, fmt.Errorf("invalid key '%s', %v", lastKey, err)
+			}
+
+			return append(l[:idx], l[idx+1:]...), nil
+
+		} else {
+			return nil, fmt.Errorf("non-terminating path element is not a key or list")
+		}
+	})
+}
+
+// Returns the root object with the modified key path object.
+func SetObject(rootObj, setObj interface{}, keys []string) (interface{}, error) {
+	if len(keys) == 0 {
+		return setObj, nil
+	}
+
+	lastKey := keys[len(keys)-1]
+	if len(lastKey) == 0 {
+		return nil, fmt.Errorf("empty last key")
+	}
+
+	return changeObject(rootObj, keys[:len(keys)-1], func(parentObj interface{}) (interface{}, error) {
+		if m, ok := AsMap(parentObj); ok {
+			m[lastKey] = setObj
+			return m, nil
+
+		} else if l, ok := AsList(parentObj); ok {
+			idx, err := stringToIntInRange(lastKey, 0, len(l))
+			if err != nil {
+				return nil, fmt.Errorf("invalid key '%s', %v", lastKey, err)
+			}
+
+			l[idx] = setObj
+			return l, nil
+
+		} else {
+			return nil, fmt.Errorf("non-terminating path element is not a key or list")
+		}
+	})
 }

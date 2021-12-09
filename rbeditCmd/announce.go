@@ -3,7 +3,10 @@ package rbeditCmd
 import (
 	"fmt"
 
+	"github.com/rakshasa/rbedit/actions"
+	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
 
@@ -52,22 +55,10 @@ func announceGetCmdRun(cmd *cobra.Command, args []string) {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, announcePath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		if _, ok := objects.AsAbsoluteURI(obj); !ok {
-			printCommandErrorAndExit(cmd, fmt.Errorf("announce not a valid URI string"))
-		}
-
-		objects.PrintObject(obj)
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, actions.NewGetAbsoluteURIAction(output, announcePath)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
@@ -91,32 +82,20 @@ func newAnnouncePutCommand() *cobra.Command {
 }
 
 func announcePutCmdRun(cmd *cobra.Command, args []string) {
-	tracker := args[0]
-	if !objects.VerifyAbsoluteURI(tracker) {
-		printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI"))
-	}
-
 	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
-	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+	if len(args) != 0 || !objects.VerifyAbsoluteURI(args[0]) {
+		printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI"))
+	}
+	metadata.Value = args[0]
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		rootObj, err := objects.SetObject(rootObj, tracker, announcePath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-		if err := output.Execute(rootObj, metadata); err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, actions.NewPutAbsoluteURIAction(output, announcePath)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

@@ -6,8 +6,12 @@ import (
 )
 
 func PrintObject(obj interface{}, options ...printOpFunction) {
+	fmt.Println(SprintObject(obj, options...))
+}
+
+func SprintObject(obj interface{}, options ...printOpFunction) string {
 	strs := sprintObjectAsList(obj, NewPrintOptions(options))
-	fmt.Printf("%s\n", strings.Join(strs, "\n"))
+	return strings.Join(strs, "\n")
 }
 
 func PrintList(listObj []interface{}, options ...printOpFunction) {

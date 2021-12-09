@@ -1,7 +1,9 @@
 package rbeditCmd
 
 import (
-	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/actions"
+	"github.com/rakshasa/rbedit/inputs"
+	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
 
@@ -27,29 +29,15 @@ func putCmdRun(cmd *cobra.Command, args []string) {
 		printCommandUsageAndExit(cmd)
 	}
 
-	keyPath := args
-
 	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput(), WithAnyValue())
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
-	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		rootObj, err := objects.SetObject(rootObj, metadata.Value, keyPath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		if err := output.Execute(rootObj, metadata); err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, actions.NewPutAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

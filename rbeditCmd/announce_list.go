@@ -3,7 +3,10 @@ package rbeditCmd
 import (
 	"fmt"
 
+	"github.com/rakshasa/rbedit/actions"
+	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
 
@@ -66,38 +69,10 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
-	output := objects.NewSingleOutput(objects.NewEncodeBencode(), objects.NewFileOutput())
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		announceList, err := objects.NewAnnounceList(obj)
-		if err != nil {
-			printCommandErrorAndExit(cmd, fmt.Errorf("could not verify announce-list, %v", err))
-		}
-		if categoryIdx >= len(announceList.Categories()) {
-			printCommandErrorAndExit(cmd, fmt.Errorf("category index out-of-bounds"))
-		}
-
-		for _, t := range trackers {
-			(*announceList.Categories()[categoryIdx]).AppendURI(t)
-		}
-
-		rootObj, err = objects.SetObject(rootObj, announceList.ToListObject(), announceListPath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-		if err := output.Execute(rootObj, metadata); err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTrackerAction(output, categoryIdx, trackers)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
@@ -113,7 +88,6 @@ func newAnnounceListGetCommand() *cobra.Command {
 	}
 
 	setupDefaultCommand(cmd)
-
 	addInputFlags(cmd)
 
 	return cmd
@@ -125,22 +99,10 @@ func announceListGetCmdRun(cmd *cobra.Command, args []string) {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput())
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
-
-		if _, err := objects.NewAnnounceList(obj); err != nil {
-			printCommandErrorAndExit(cmd, fmt.Errorf("could not verify announce-list, %v", err))
-		}
-
-		objects.PrintObject(obj)
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, actions.NewGetAnnounceListAction(output, announceListPath)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
@@ -151,8 +113,9 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-category [OPTIONS] INDEX",
 		Short: "Get announce-list category",
-		Args:  cobra.ExactArgs(1),
-		Run:   announceListGetCategoryCmdRun,
+		// TODO: Create a function that verifies valid positive index.
+		Args: cobra.ExactArgs(1),
+		Run:  announceListGetCategoryCmdRun,
 	}
 
 	setupDefaultCommand(cmd)
@@ -163,36 +126,19 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 }
 
 func announceListGetCategoryCmdRun(cmd *cobra.Command, args []string) {
-	categoryIdx, err := categoryIndexFromArgs(args)
-	if err != nil {
-		printCommandErrorAndExit(cmd, err)
-	}
-
 	metadata, err := metadataFromCommand(cmd, WithInput())
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
-	input := objects.NewSingleInput(objects.NewDecodeBencode(), objects.NewFileInput())
+	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+	output := outputs.NewSingleOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput())
 
-	if err := input.Execute(metadata, func(rootObj interface{}, metadata objects.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, announceListPath)
-		if err != nil {
-			printCommandErrorAndExit(cmd, err)
-		}
+	batch := actions.NewBatch(output)
+	batch.Append(actions.NewGetAnnounceListActionFunc(announceListPath))
+	batch.Append(actions.NewGetObjectActionFunc(args))
 
-		announceList, err := objects.NewAnnounceList(obj)
-		if err != nil {
-			printCommandErrorAndExit(cmd, fmt.Errorf("could not verify announce-list, %v", err))
-		}
-		if categoryIdx >= len(announceList.Categories()) {
-			printCommandErrorAndExit(cmd, fmt.Errorf("category index out-of-bounds"))
-		}
-
-		objects.PrintList(announceList.Categories()[categoryIdx].ToListObject(), objects.WithValuesOnly(), objects.WithoutIndent())
-		return nil
-
-	}); err != nil {
+	if err := input.Execute(metadata, batch.CreateFunction()); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

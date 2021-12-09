@@ -1,4 +1,4 @@
-package objects
+package inputs
 
 import (
 	"bytes"
@@ -19,6 +19,7 @@ type Input interface {
 }
 
 type IOMetadata struct {
+	Keys          []string
 	InputFilename string
 	Inplace       bool
 	Value         interface{}

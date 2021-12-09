@@ -7,35 +7,37 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetCmd:
+// RemoveCmd:
 
-func newGetCommand() *cobra.Command {
+func newRemoveCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [OPTIONS] [KEY-PATH]...",
-		Short: "Get object",
-		Run:   getCmdRun,
+		Use:   "remove [OPTIONS] KEY-PATH...",
+		Short: "Remove object",
+		Args:  cobra.MinimumNArgs(1),
+		Run:   removeCmdRun,
 	}
 
 	setupDefaultCommand(cmd)
 	addInputFlags(cmd)
+	addOutputFlags(cmd)
 
 	return cmd
 }
 
-func getCmdRun(cmd *cobra.Command, args []string) {
+func removeCmdRun(cmd *cobra.Command, args []string) {
 	if len(args) == 0 && !hasChangedFlags(cmd) {
 		printCommandUsageAndExit(cmd)
 	}
 
-	metadata, err := metadataFromCommand(cmd, WithInput())
+	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
+	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, actions.NewGetObjectAction(output, args)); err != nil {
+	if err := input.Execute(metadata, actions.NewRemoveAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

@@ -60,7 +60,7 @@ docker run -i \
   --name "${container}" \
   --volume "${build_dir}":/build/go/src/github.com/rakshasa/rbedit \
   "${build_image}" \
-  /bin/bash - <<"EOF"
+  /bin/bash - <<EOF
 #!/bin/bash
 set -euxo pipefail
 
@@ -71,8 +71,8 @@ rm -rf ./go.{mod,sum} ./vendor/
 go clean -cache
 go mod init github.com/rakshasa/rbedit
 
-for dep in "${dependencies[@]}"; do
-  go get -u -v "${dep}"
+for dep in ${dependencies[@]}; do
+  go get -u -v "\${dep}"
 done
 
 go mod tidy -v

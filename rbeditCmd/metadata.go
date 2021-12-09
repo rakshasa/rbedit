@@ -3,7 +3,7 @@ package rbeditCmd
 import (
 	"fmt"
 
-	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/inputs"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )
@@ -64,15 +64,15 @@ func hasChangedFlags(cmd *cobra.Command) bool {
 	return result
 }
 
-func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (objects.IOMetadata, error) {
+func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (inputs.IOMetadata, error) {
 	opts := newMetadataOptions(options)
 
-	metadata := objects.IOMetadata{}
+	metadata := inputs.IOMetadata{}
 
 	if opts.input {
 		value, err := cmd.Flags().GetString(inputFlagName)
 		if err != nil || len(value) == 0 {
-			return objects.IOMetadata{}, fmt.Errorf("no valid input source")
+			return inputs.IOMetadata{}, fmt.Errorf("no valid input source")
 		}
 
 		metadata.InputFilename = value
@@ -81,7 +81,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 	if opts.output {
 		value, err := cmd.Flags().GetBool(inplaceFlagName)
 		if err != nil || !value {
-			return objects.IOMetadata{}, fmt.Errorf("no valid output destination")
+			return inputs.IOMetadata{}, fmt.Errorf("no valid output destination")
 		}
 
 		metadata.Inplace = value
@@ -91,21 +91,21 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (obj
 		for name, fn := range opts.getValue {
 			value, ok, err := fn(cmd.Flags(), name)
 			if err != nil {
-				return objects.IOMetadata{}, fmt.Errorf("could not parse value, %v", err)
+				return inputs.IOMetadata{}, fmt.Errorf("could not parse value, %v", err)
 			}
 			if !ok {
 				continue
 			}
 
 			if metadata.Value != nil {
-				return objects.IOMetadata{}, fmt.Errorf("multiple values not supported")
+				return inputs.IOMetadata{}, fmt.Errorf("multiple values not supported")
 			}
 
 			metadata.Value = value
 		}
 
 		if metadata.Value == nil {
-			return objects.IOMetadata{}, fmt.Errorf("no value provided")
+			return inputs.IOMetadata{}, fmt.Errorf("no value provided")
 		}
 	}
 
