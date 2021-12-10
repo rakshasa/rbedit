@@ -34,6 +34,43 @@ func AsAbsoluteURI(obj interface{}) (string, bool) {
 	return s, true
 }
 
+func CopyObject(src interface{}) (interface{}, error) {
+	if d, ok := AsInteger(src); ok {
+		return d, nil
+	} else if l, ok := AsList(src); ok {
+		dst := make([]interface{}, len(l))
+
+		for idx, obj := range l {
+			o, err := CopyObject(obj)
+			if err != nil {
+				return nil, err
+			}
+
+			dst[idx] = o
+		}
+
+		return dst, nil
+	} else if m, ok := AsMap(src); ok {
+		dst := make(map[string]interface{})
+
+		for key, obj := range m {
+			o, err := CopyObject(obj)
+			if err != nil {
+				return nil, err
+			}
+
+			dst[key] = o
+		}
+		return dst, nil
+	} else if s, ok := AsString(src); ok {
+		return s, nil
+	} else if src == nil {
+		return nil, fmt.Errorf("null object")
+	} else {
+		return nil, fmt.Errorf("invalid object type")
+	}
+}
+
 func LookupKeyPath(parentObj interface{}, keys []string) (interface{}, error) {
 	if len(keys) == 0 {
 		return parentObj, nil
@@ -141,6 +178,9 @@ func RemoveObject(rootObj interface{}, keys []string) (interface{}, error) {
 
 // Returns the root object with the modified key path object.
 func SetObject(rootObj, setObj interface{}, keys []string) (interface{}, error) {
+	if setObj == nil {
+		return nil, fmt.Errorf("null object")
+	}
 	if len(keys) == 0 {
 		return setObj, nil
 	}

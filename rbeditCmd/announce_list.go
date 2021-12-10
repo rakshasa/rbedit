@@ -27,6 +27,8 @@ func newAnnounceListCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	cmd.AddCommand(newAnnounceListAppendTrackerCommand())
+	cmd.AddCommand(newAnnounceListClearCommand())
+	cmd.AddCommand(newAnnounceListClearCategoryCommand())
 	cmd.AddCommand(newAnnounceListGetCommand())
 	cmd.AddCommand(newAnnounceListGetCategoryCommand())
 
@@ -72,9 +74,80 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTrackerAction(output, categoryIdx, trackers)); err != nil {
+	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTracker(output, categoryIdx, trackers)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
+}
+
+// AnnounceListClearCmd:
+
+func newAnnounceListClearCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "clear",
+		Short: "Clear announce list",
+		Args:  cobra.ExactArgs(0),
+
+		Run: func(cmd *cobra.Command, args []string) {
+			metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+			if err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+			metadata.Value = new([]interface{})
+
+			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
+
+			if err := input.Execute(metadata, actions.NewPut(output, announceListPath)); err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+		},
+	}
+
+	setupDefaultCommand(cmd)
+
+	addInputFlags(cmd)
+	addOutputFlags(cmd)
+
+	return cmd
+}
+
+// AnnounceListClearCategoryCmd:
+
+func newAnnounceListClearCategoryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "clear-category",
+		Short: "Clear an announce list category",
+		Args:  cobra.ExactArgs(1),
+
+		Run: func(cmd *cobra.Command, args []string) {
+			metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+			if err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+
+			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
+
+			batch := actions.NewBatch()
+			batch.Append(actions.NewReplaceWithBatchResultFunction(announceListPath,
+				actions.NewGetObjectFunction(announceListPath),
+				actions.NewReplaceListIndexWithBatchResultFunction(args[0],
+					actions.NewListValue(make([]interface{}, 0, 0)),
+				),
+			))
+
+			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+		},
+	}
+
+	setupDefaultCommand(cmd)
+
+	addInputFlags(cmd)
+	addOutputFlags(cmd)
+
+	return cmd
 }
 
 // AnnounceListGetCmd:
@@ -84,27 +157,30 @@ func newAnnounceListGetCommand() *cobra.Command {
 		Use:   "get [OPTIONS]",
 		Short: "Get announce-list url",
 		Args:  cobra.ExactArgs(0),
-		Run:   announceListGetCmdRun,
+
+		Run: func(cmd *cobra.Command, args []string) {
+			metadata, err := metadataFromCommand(cmd, WithInput())
+			if err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+
+			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+			output := outputs.NewSingleOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput())
+
+			batch := actions.NewBatch()
+			batch.Append(actions.NewGetObjectFunction(announceListPath))
+			batch.Append(actions.NewVerifyAnnounceListFunction())
+
+			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+		},
 	}
 
 	setupDefaultCommand(cmd)
 	addInputFlags(cmd)
 
 	return cmd
-}
-
-func announceListGetCmdRun(cmd *cobra.Command, args []string) {
-	metadata, err := metadataFromCommand(cmd, WithInput())
-	if err != nil {
-		printCommandErrorAndExit(cmd, err)
-	}
-
-	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput())
-
-	if err := input.Execute(metadata, actions.NewGetAnnounceListAction(output, announceListPath)); err != nil {
-		printCommandErrorAndExit(cmd, err)
-	}
 }
 
 // AnnounceListGetCategoryCmd:
@@ -115,7 +191,26 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 		Short: "Get announce-list category",
 		// TODO: Create a function that verifies valid positive index.
 		Args: cobra.ExactArgs(1),
-		Run:  announceListGetCategoryCmdRun,
+
+		Run: func(cmd *cobra.Command, args []string) {
+			metadata, err := metadataFromCommand(cmd, WithInput())
+			if err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+
+			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
+			output := outputs.NewSingleOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput())
+
+			batch := actions.NewBatch()
+			batch.Append(actions.NewGetObjectFunction(announceListPath))
+			batch.Append(actions.NewVerifyResultIsListFunction())
+			batch.Append(actions.NewGetListIndexFunction(args[0]))
+			batch.Append(actions.NewVerifyAnnounceListCategoryFunction())
+
+			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
+				printCommandErrorAndExit(cmd, err)
+			}
+		},
 	}
 
 	setupDefaultCommand(cmd)
@@ -123,22 +218,4 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 	addInputFlags(cmd)
 
 	return cmd
-}
-
-func announceListGetCategoryCmdRun(cmd *cobra.Command, args []string) {
-	metadata, err := metadataFromCommand(cmd, WithInput())
-	if err != nil {
-		printCommandErrorAndExit(cmd, err)
-	}
-
-	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput())
-
-	batch := actions.NewBatch(output)
-	batch.Append(actions.NewGetAnnounceListActionFunc(announceListPath))
-	batch.Append(actions.NewGetObjectActionFunc(args))
-
-	if err := input.Execute(metadata, batch.CreateFunction()); err != nil {
-		printCommandErrorAndExit(cmd, err)
-	}
 }

@@ -1,11 +1,8 @@
 package rbeditCmd
 
 import (
-	"fmt"
-
 	"github.com/rakshasa/rbedit/actions"
 	"github.com/rakshasa/rbedit/inputs"
-	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +55,11 @@ func announceGetCmdRun(cmd *cobra.Command, args []string) {
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
-	if err := input.Execute(metadata, actions.NewGetAbsoluteURIAction(output, announcePath)); err != nil {
+	batch := actions.NewBatch()
+	batch.Append(actions.NewGetObjectFunction(announcePath))
+	batch.Append(actions.NewVerifyResultIsURIFunction())
+
+	if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
@@ -86,16 +87,16 @@ func announcePutCmdRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
-
-	if len(args) != 0 || !objects.VerifyAbsoluteURI(args[0]) {
-		printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI"))
-	}
 	metadata.Value = args[0]
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, actions.NewPutAbsoluteURIAction(output, announcePath)); err != nil {
+	batch := actions.NewBatch()
+	batch.Append(actions.NewVerifyValueIsURIFunction())
+	batch.Append(actions.NewPutFunction(announcePath))
+
+	if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
