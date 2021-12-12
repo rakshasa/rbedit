@@ -14,6 +14,15 @@ func EscapeURIString(str string) string {
 	return string(EscapeURIBytes([]byte(str)))
 }
 
+func EscapeURIStringList(strs []string) []string {
+	escaped := make([]string, 0, len(strs))
+	for _, str := range strs {
+		escaped = append(escaped, string(EscapeURIBytes([]byte(str))))
+	}
+
+	return escaped
+}
+
 func EscapeURIBytes(data []byte) []byte {
 	escaped := make([]byte, 0, len(data)*2)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/types"
 )
 
 func NewGetObjectAction(output outputs.Output, keys []string) inputs.InputResultFunc {
@@ -44,7 +45,7 @@ func NewGetListIndexAction(output outputs.Output, indexString string) inputs.Inp
 			return fmt.Errorf("out-of-bounds")
 		}
 		if err := output.Execute(listObject[idx], metadata); err != nil {
-			return err
+			return types.PrependKeyStringIfKeysError(err, indexString)
 		}
 
 		return nil
@@ -54,46 +55,6 @@ func NewGetListIndexAction(output outputs.Output, indexString string) inputs.Inp
 func NewGetListIndex(indexString string) ActionFunc {
 	return func(output outputs.Output) inputs.InputResultFunc {
 		return NewGetListIndexAction(output, indexString)
-	}
-}
-
-func NewGetAbsoluteURIAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, keys)
-		if err != nil {
-			return err
-		}
-		if _, ok := objects.AsAbsoluteURI(obj); !ok {
-			return fmt.Errorf("not a valid absolute path URI")
-		}
-		if err := output.Execute(obj, metadata); err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
-func NewGetAnnounceListAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
-		obj, err := objects.LookupKeyPath(rootObj, keys)
-		if err != nil {
-			return err
-		}
-		if _, err := objects.NewAnnounceList(obj); err != nil {
-			return fmt.Errorf("could not verify announce-list, %v", err)
-		}
-		if err := output.Execute(obj, metadata); err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
-func NewGetAnnounceList(keys []string) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
-		return NewGetAnnounceListAction(output, keys)
 	}
 }
 
@@ -145,24 +106,6 @@ func NewPutAction(output outputs.Output, keys []string) inputs.InputResultFunc {
 func NewPut(keys []string) ActionFunc {
 	return func(output outputs.Output) inputs.InputResultFunc {
 		return NewPutAction(output, keys)
-	}
-}
-
-func NewPutAbsoluteURIAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
-		if _, ok := objects.AsAbsoluteURI(metadata.Value); !ok {
-			return fmt.Errorf("not a valid absolute path URI")
-		}
-
-		rootObj, err := objects.SetObject(rootObj, metadata.Value, keys)
-		if err != nil {
-			return err
-		}
-		if err := output.Execute(rootObj, metadata); err != nil {
-			return err
-		}
-
-		return nil
 	}
 }
 

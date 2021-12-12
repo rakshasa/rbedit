@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +28,12 @@ func printErrorAndExit(err error) {
 }
 
 func printCommandErrorAndExit(cmd *cobra.Command, err error) {
-	fmt.Fprintf(os.Stderr, "%s: %s\n", strings.Join(commandPathAsList(cmd), " "), err.Error())
+	cmdShort := strings.Join(commandPathAsList(cmd), " ")
+
+	if keysErr, ok := err.(types.KeysError); ok {
+		cmdShort += " (" + strings.Join(types.EscapeURIStringList(keysErr.Keys()), "/") + ")"
+	}
+
+	fmt.Fprintf(os.Stderr, "%s: %s\n", cmdShort, err.Error())
 	os.Exit(1)
 }
