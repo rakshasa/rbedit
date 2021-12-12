@@ -1,9 +1,9 @@
 package actions
 
-func NewVerifyAnnounceListFunction() ActionFunc {
-	return NewVerifyResultIsListContentFunction(NewVerifyResultIsListContentFunction(NewVerifyResultIsURIFunction()))
+func NewVerifyAnnounceList() ActionFunc {
+	return NewVerifyResultIsListContent(NewVerifyResultIsListContent(NewVerifyResultIsURI()))
 }
 
-func NewVerifyAnnounceListCategoryFunction() ActionFunc {
-	return NewVerifyResultIsListContentFunction(NewVerifyResultIsURIFunction())
+func NewVerifyAnnounceListCategory() ActionFunc {
+	return NewVerifyResultIsListContent(NewVerifyResultIsURI())
 }

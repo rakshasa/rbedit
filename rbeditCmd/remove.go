@@ -37,7 +37,7 @@ func removeCmdRun(cmd *cobra.Command, args []string) {
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, actions.NewRemove(output, args)); err != nil {
+	if err := input.Execute(metadata, actions.NewRemoveAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

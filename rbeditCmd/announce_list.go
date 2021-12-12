@@ -5,8 +5,8 @@ import (
 
 	"github.com/rakshasa/rbedit/actions"
 	"github.com/rakshasa/rbedit/inputs"
-	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +60,7 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	}
 	trackers := []string{}
 	for idx, t := range args[1:] {
-		if !objects.VerifyAbsoluteURI(t) {
+		if !types.VerifyAbsoluteURI(t) {
 			printCommandErrorAndExit(cmd, fmt.Errorf("failed to validate URI for tracker %d\n", idx))
 		}
 		trackers = append(trackers, t)
@@ -74,7 +74,7 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTracker(output, categoryIdx, trackers)); err != nil {
+	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTrackerAction(output, categoryIdx, trackers)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }
@@ -97,7 +97,7 @@ func newAnnounceListClearCommand() *cobra.Command {
 			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
-			if err := input.Execute(metadata, actions.NewPut(output, announceListPath)); err != nil {
+			if err := input.Execute(metadata, actions.NewPutAction(output, announceListPath)); err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 		},
@@ -129,9 +129,9 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 			batch := actions.NewBatch()
-			batch.Append(actions.NewReplaceWithBatchResultFunction(announceListPath,
-				actions.NewGetObjectFunction(announceListPath),
-				actions.NewReplaceListIndexWithBatchResultFunction(args[0],
+			batch.Append(actions.NewReplaceWithBatchResult(announceListPath,
+				actions.NewGetObject(announceListPath),
+				actions.NewReplaceIndexWithBatchResult(args[0],
 					actions.NewListValue(make([]interface{}, 0, 0)),
 				),
 			))
@@ -168,8 +168,8 @@ func newAnnounceListGetCommand() *cobra.Command {
 			output := outputs.NewSingleOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput())
 
 			batch := actions.NewBatch()
-			batch.Append(actions.NewGetObjectFunction(announceListPath))
-			batch.Append(actions.NewVerifyAnnounceListFunction())
+			batch.Append(actions.NewGetObject(announceListPath))
+			batch.Append(actions.NewVerifyAnnounceList())
 
 			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -202,10 +202,10 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 			output := outputs.NewSingleOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput())
 
 			batch := actions.NewBatch()
-			batch.Append(actions.NewGetObjectFunction(announceListPath))
-			batch.Append(actions.NewVerifyResultIsListFunction())
-			batch.Append(actions.NewGetListIndexFunction(args[0]))
-			batch.Append(actions.NewVerifyAnnounceListCategoryFunction())
+			batch.Append(actions.NewGetObject(announceListPath))
+			batch.Append(actions.NewVerifyResultIsList())
+			batch.Append(actions.NewGetListIndex(args[0]))
+			batch.Append(actions.NewVerifyAnnounceListCategory())
 
 			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 				printCommandErrorAndExit(cmd, err)

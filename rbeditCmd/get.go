@@ -35,7 +35,7 @@ func getCmdRun(cmd *cobra.Command, args []string) {
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
-	if err := input.Execute(metadata, actions.NewGetObject(output, args)); err != nil {
+	if err := input.Execute(metadata, actions.NewGetObjectAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 }

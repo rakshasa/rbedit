@@ -2,8 +2,10 @@ package rbeditCmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/rakshasa/rbedit/inputs"
+	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )
@@ -14,17 +16,8 @@ type metadataGetFlagFunction func(*flag.FlagSet, string) (interface{}, bool, err
 type metadataOptions struct {
 	input    bool
 	output   bool
+	keyStack [][]string
 	getValue map[string]metadataGetFlagFunction
-}
-
-func newMetadataOptions(opOptions []metadataOpFunction) *metadataOptions {
-	opts := &metadataOptions{}
-
-	for _, opt := range opOptions {
-		opt(opts)
-	}
-
-	return opts
 }
 
 func WithInput() metadataOpFunction {
@@ -52,6 +45,39 @@ func WithAnyValue() metadataOpFunction {
 			(stringValueFlagName):  getStringValueFromFlag,
 		}
 	}
+}
+
+func newMetadataOptions(opOptions []metadataOpFunction) *metadataOptions {
+	opts := &metadataOptions{}
+	for _, opt := range opOptions {
+		opt(opts)
+	}
+
+	return opts
+}
+
+func (m *metadataOptions) PushKeys(keys []string) {
+	m.keyStack = append(m.keyStack, keys)
+}
+
+func (m *metadataOptions) PopKeys() {
+	if len(m.keyStack) == 0 {
+		printErrorAndExit(fmt.Errorf("could not pop empty key stack"))
+	}
+
+	m.keyStack = m.keyStack[:len(m.keyStack)-1]
+}
+
+func (m *metadataOptions) KeysAsString() string {
+	var escapedKeys []string
+
+	for _, keys := range m.keyStack {
+		for _, key := range keys {
+			escapedKeys = append(escapedKeys, types.EscapeURIString(key))
+		}
+	}
+
+	return strings.Join(escapedKeys, "/")
 }
 
 func hasChangedFlags(cmd *cobra.Command) bool {

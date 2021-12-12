@@ -4,7 +4,14 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/rakshasa/rbedit/types"
 )
+
+func SprintObject(obj interface{}, options ...printOpFunction) string {
+	strs := sprintObjectAsList(obj, NewPrintOptions(options))
+	return strings.Join(strs, "\n")
+}
 
 func sprintObjectAsList(obj interface{}, opts *printOptions) []string {
 	if d, ok := AsInteger(obj); ok {
@@ -72,22 +79,10 @@ func sprintMap(m map[string]interface{}, opts *printOptions) []string {
 	return strs
 }
 
-func sprintString(s string, opts *printOptions) []string {
-	// TODO: Add prettify options.
-	var str string
-
-	for idx, c := range []byte(s) {
-		if idx >= 256 {
-			str += " ..."
-			break
-		}
-
-		if c < 0x20 || c >= 0x7f {
-			str += fmt.Sprintf("\\x%02x", int(c))
-		} else {
-			str += string(c)
-		}
+func sprintString(str string, opts *printOptions) []string {
+	if len(str) > 256 {
+		return []string{types.EscapeURIString(str[:256])}
 	}
 
-	return []string{str}
+	return []string{types.EscapeURIString(str)}
 }

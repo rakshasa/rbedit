@@ -56,8 +56,8 @@ func announceGetCmdRun(cmd *cobra.Command, args []string) {
 	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
 	batch := actions.NewBatch()
-	batch.Append(actions.NewGetObjectFunction(announcePath))
-	batch.Append(actions.NewVerifyResultIsURIFunction())
+	batch.Append(actions.NewGetObject(announcePath))
+	batch.Append(actions.NewVerifyResultIsURI())
 
 	if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 		printCommandErrorAndExit(cmd, err)
@@ -93,8 +93,8 @@ func announcePutCmdRun(cmd *cobra.Command, args []string) {
 	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 	batch := actions.NewBatch()
-	batch.Append(actions.NewVerifyValueIsURIFunction())
-	batch.Append(actions.NewPutFunction(announcePath))
+	batch.Append(actions.NewVerifyValueIsURI())
+	batch.Append(actions.NewPut(announcePath))
 
 	if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 		printCommandErrorAndExit(cmd, err)

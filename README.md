@@ -15,7 +15,7 @@ Quick Start
 RBEDIT_ARCH=darwin ./scripts/build.sh
 ```
 
-The only dependency is Docker.
+The only build requirement is Docker and the binary has no runtime dependencies.
 
 ```bash
 ./build/rbedit announce get --input ./test.torrent

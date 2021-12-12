@@ -60,13 +60,13 @@ docker run -i \
   --name "${container}" \
   --volume "${build_dir}":/build/go/src/github.com/rakshasa/rbedit \
   "${build_image}" \
-  /bin/bash - <<EOF
-#!/bin/bash
-set -euxo pipefail
+  /bin/sh - <<EOF
+#!/bin/sh
+set -eux
 
 cd /build/go/src/github.com/rakshasa/rbedit/
 
-rm -rf ./go.{mod,sum} ./vendor/
+rm -rf ./go.mod ./go.sum ./vendor/
 
 go clean -cache
 go mod init github.com/rakshasa/rbedit

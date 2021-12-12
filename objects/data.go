@@ -2,6 +2,8 @@ package objects
 
 import (
 	"fmt"
+
+	"github.com/rakshasa/rbedit/types"
 )
 
 // Add float and uinteger:
@@ -27,7 +29,7 @@ func AsString(obj interface{}) (string, bool) {
 
 func AsAbsoluteURI(obj interface{}) (string, bool) {
 	s, ok := obj.(string)
-	if !ok || !VerifyAbsoluteURI(s) {
+	if !ok || !types.VerifyAbsoluteURI(s) {
 		return "", false
 	}
 

@@ -2,16 +2,10 @@ package objects
 
 import (
 	"fmt"
-	"strings"
 )
 
 func PrintObject(obj interface{}, options ...printOpFunction) {
 	fmt.Println(SprintObject(obj, options...))
-}
-
-func SprintObject(obj interface{}, options ...printOpFunction) string {
-	strs := sprintObjectAsList(obj, NewPrintOptions(options))
-	return strings.Join(strs, "\n")
 }
 
 func PrintList(listObj []interface{}, options ...printOpFunction) {
