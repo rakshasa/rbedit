@@ -94,6 +94,8 @@ docker create -i --rm \
   "${rbedit_image}"
 
 mkdir -p "${project_root}/build/"
-docker cp "${container}:/rbedit" "${project_root}/build/"
+docker cp "${container}:/rbedit" "${project_root}/build/rbedit-${RBEDIT_ARCH}"
+
+cp "${project_root}/build/rbedit-${RBEDIT_ARCH}" "${project_root}/build/rbedit"
 
 success="yes"
