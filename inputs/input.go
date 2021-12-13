@@ -6,22 +6,17 @@ import (
 	"os"
 
 	bencode "github.com/rakshasa/bencode-go"
+	"github.com/rakshasa/rbedit/types"
 )
 
 type DecodeFunc func([]byte) (interface{}, error)
-type InputFunc func(IOMetadata) ([]byte, error)
-type InputResultFunc func(interface{}, IOMetadata) error
+type InputFunc func(types.IOMetadata) ([]byte, error)
+type InputResultFunc func(interface{}, types.IOMetadata) error
 
 type Input interface {
 	// Executed once for every distinct root bencoded data object in
 	// the input.
-	Execute(metadata IOMetadata, fn InputResultFunc) error
-}
-
-type IOMetadata struct {
-	InputFilename string
-	Inplace       bool
-	Value         interface{}
+	Execute(metadata types.IOMetadata, fn InputResultFunc) error
 }
 
 // SingleInput:
@@ -38,7 +33,7 @@ func NewSingleInput(decodeFn DecodeFunc, inputFn InputFunc) *singleInput {
 	}
 }
 
-func (o *singleInput) Execute(metadata IOMetadata, resultFn InputResultFunc) error {
+func (o *singleInput) Execute(metadata types.IOMetadata, resultFn InputResultFunc) error {
 	data, err := o.inputFn(metadata)
 	if err != nil {
 		return err
@@ -68,7 +63,7 @@ func NewDecodeBencode() DecodeFunc {
 // InputFunc:
 
 func NewFileInput() InputFunc {
-	return func(metadata IOMetadata) ([]byte, error) {
+	return func(metadata types.IOMetadata) ([]byte, error) {
 		data, err := os.ReadFile(metadata.InputFilename)
 		if err != nil {
 			if pathErr, ok := err.(*os.PathError); ok {

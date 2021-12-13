@@ -66,13 +66,15 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 		trackers = append(trackers, t)
 	}
 
-	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+	metadata, output, err := metadataFromCommand(cmd,
+		WithInput(),
+		WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 	if err := input.Execute(metadata, actions.NewGetAnnounceListAppendTrackerAction(output, categoryIdx, trackers)); err != nil {
 		printCommandErrorAndExit(cmd, err)
@@ -88,14 +90,16 @@ func newAnnounceListClearCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+			metadata, output, err := metadataFromCommand(cmd,
+				WithInput(),
+				WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 			metadata.Value = new([]interface{})
 
 			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 			if err := input.Execute(metadata, actions.NewPutAction(output, announceListPath)); err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -120,13 +124,15 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+			metadata, output, err := metadataFromCommand(cmd,
+				WithInput(),
+				WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 
 			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-			output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 			batch := actions.NewBatch()
 			batch.Append(actions.NewReplaceWithBatchResult(announceListPath,
@@ -159,13 +165,15 @@ func newAnnounceListGetCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			metadata, err := metadataFromCommand(cmd, WithInput())
+			metadata, output, err := metadataFromCommand(cmd,
+				WithInput(),
+				WithDefaultOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput()),
+			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 
 			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-			output := outputs.NewSingleOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput())
 
 			batch := actions.NewBatch()
 			batch.Append(actions.NewGetObject(announceListPath))
@@ -193,13 +201,15 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 		Args: cobra.ExactArgs(1),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			metadata, err := metadataFromCommand(cmd, WithInput())
+			metadata, output, err := metadataFromCommand(cmd,
+				WithInput(),
+				WithDefaultOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput()),
+			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 
 			input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-			output := outputs.NewSingleOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput())
 
 			batch := actions.NewBatch()
 			batch.Append(actions.NewGetObject(announceListPath))
@@ -214,7 +224,6 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 	}
 
 	setupDefaultCommand(cmd)
-
 	addInputFlags(cmd)
 
 	return cmd

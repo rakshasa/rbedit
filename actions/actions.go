@@ -1,17 +1,56 @@
 package actions
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"strconv"
 
+	"github.com/rakshasa/bencode-go"
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 
+func NewSHA1Action(output outputs.Output, keys []string, target types.ResultTarget) inputs.InputResultFunc {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
+		object, err := objects.LookupKeyPath(rootObj, keys)
+		if err != nil {
+			return err
+		}
+
+		hasher := sha1.New()
+		if err := bencode.Marshal(hasher, object); err != nil {
+			return err
+		}
+
+		result := rootObj
+
+		switch target {
+		case types.ObjectResultTarget:
+			result = string(hasher.Sum([]byte{}))
+		case types.MetadataResultTarget:
+			metadata.InfoHash = string(hasher.Sum([]byte{}))
+		default:
+			return fmt.Errorf("unknown output target type")
+		}
+
+		if err := output.Execute(result, metadata); err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func NewSHA1(keys []string, target types.ResultTarget) ActionFunc {
+	return func(output outputs.Output) inputs.InputResultFunc {
+		return NewSHA1Action(output, keys, target)
+	}
+}
+
 func NewGetObjectAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, keys)
 		if err != nil {
 			return err
@@ -31,7 +70,7 @@ func NewGetObject(keys []string) ActionFunc {
 }
 
 func NewGetListIndexAction(output outputs.Output, indexString string) inputs.InputResultFunc {
-	return func(object interface{}, metadata inputs.IOMetadata) error {
+	return func(object interface{}, metadata types.IOMetadata) error {
 		idx, err := strconv.Atoi(indexString)
 		if err != nil || idx < 0 {
 			return fmt.Errorf("not a valid list index")
@@ -59,7 +98,7 @@ func NewGetListIndex(indexString string) ActionFunc {
 }
 
 func NewGetAnnounceListAppendTrackerAction(output outputs.Output, categoryIdx int, trackers []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, []string{"announce-list"})
 		if err != nil {
 			return err
@@ -90,7 +129,7 @@ func NewGetAnnounceListAppendTrackerAction(output outputs.Output, categoryIdx in
 }
 
 func NewPutAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		rootObj, err := objects.SetObject(rootObj, metadata.Value, keys)
 		if err != nil {
 			return err
@@ -110,7 +149,7 @@ func NewPut(keys []string) ActionFunc {
 }
 
 func NewRemoveAction(output outputs.Output, keys []string) inputs.InputResultFunc {
-	return func(rootObject interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObject interface{}, metadata types.IOMetadata) error {
 		rootObject, err := objects.RemoveObject(rootObject, keys)
 		if err != nil {
 			return err
@@ -130,7 +169,7 @@ func NewReplaceWithBatchResultAction(output outputs.Output, keys []string, actio
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObject interface{}, metadata types.IOMetadata) error {
 		resultOutput := outputs.NewResultOutput()
 		if err := batch.CreateFunction(resultOutput)(rootObject, metadata); err != nil {
 			return err

@@ -2,6 +2,7 @@ package outputs
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -63,5 +64,16 @@ func NewEncodePrintAsListOfLists() EncodeFunc {
 		}
 
 		return []byte(strings.TrimSuffix(str, "\n")), nil
+	}
+}
+
+func NewEncodeAsHexString() EncodeFunc {
+	return func(object interface{}) ([]byte, error) {
+		str, ok := objects.AsString(object)
+		if !ok {
+			return nil, fmt.Errorf("not a string")
+		}
+
+		return []byte(hex.EncodeToString([]byte(str))), nil
 	}
 }

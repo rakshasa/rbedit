@@ -7,6 +7,7 @@ import (
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/types"
 )
 
 func NewAppendFromListOfBatchResultsAction(output outputs.Output, indexString string, actionsFn ...ActionFunc) inputs.InputResultFunc {
@@ -16,7 +17,7 @@ func NewAppendFromListOfBatchResultsAction(output outputs.Output, indexString st
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObject interface{}, metadata types.IOMetadata) error {
 		rootList, ok := objects.AsList(rootObject)
 		if !ok {
 			return fmt.Errorf("not a list object")
@@ -53,7 +54,7 @@ func NewReplaceIndexWithBatchResultAction(output outputs.Output, indexString str
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObject interface{}, metadata types.IOMetadata) error {
 		idx, err := strconv.Atoi(indexString)
 		if err != nil || idx < 0 {
 			return fmt.Errorf("not a valid list index")

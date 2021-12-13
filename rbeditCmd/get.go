@@ -27,13 +27,15 @@ func getCmdRun(cmd *cobra.Command, args []string) {
 		printCommandUsageAndExit(cmd)
 	}
 
-	metadata, err := metadataFromCommand(cmd, WithInput())
+	metadata, output, err := metadataFromCommand(cmd,
+		WithInput(),
+		WithDefaultOutput(outputs.NewEncodePrint(), outputs.NewStdOutput()),
+	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
 	if err := input.Execute(metadata, actions.NewGetObjectAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)

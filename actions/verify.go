@@ -6,10 +6,11 @@ import (
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/types"
 )
 
 func NewVerifyResultIsURIAction(output outputs.Output) inputs.InputResultFunc {
-	return func(result interface{}, metadata inputs.IOMetadata) error {
+	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsAbsoluteURI(result); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
 		}
@@ -28,7 +29,7 @@ func NewVerifyResultIsURI() ActionFunc {
 }
 
 func NewVerifyValueIsURIAction(output outputs.Output) inputs.InputResultFunc {
-	return func(result interface{}, metadata inputs.IOMetadata) error {
+	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsAbsoluteURI(metadata.Value); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
 		}
@@ -47,7 +48,7 @@ func NewVerifyValueIsURI() ActionFunc {
 }
 
 func NewVerifyResultIsListAction(output outputs.Output) inputs.InputResultFunc {
-	return func(result interface{}, metadata inputs.IOMetadata) error {
+	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsList(result); !ok {
 			return fmt.Errorf("could not verify: not a list")
 		}
@@ -66,7 +67,7 @@ func NewVerifyResultIsList() ActionFunc {
 }
 
 func NewVerifyResultIsListContentAction(output outputs.Output, verifyFn ActionFunc) inputs.InputResultFunc {
-	return func(result interface{}, metadata inputs.IOMetadata) error {
+	return func(result interface{}, metadata types.IOMetadata) error {
 		objectList, ok := objects.AsList(result)
 		if !ok {
 			return fmt.Errorf("could not verify list content: not a list")

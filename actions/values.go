@@ -3,10 +3,11 @@ package actions
 import (
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/types"
 )
 
 func NewListValueAction(output outputs.Output, value []interface{}) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		if err := output.Execute(value, metadata); err != nil {
 			return err
 		}
@@ -22,7 +23,7 @@ func NewListValue(value []interface{}) ActionFunc {
 }
 
 func NewStringValueAction(output outputs.Output, value string) inputs.InputResultFunc {
-	return func(rootObj interface{}, metadata inputs.IOMetadata) error {
+	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		if err := output.Execute(value, metadata); err != nil {
 			return err
 		}

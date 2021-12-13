@@ -5,13 +5,14 @@ import (
 
 	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/types"
 )
 
 type EncodeFunc func(interface{}) ([]byte, error)
-type OutputFunc func([]byte, inputs.IOMetadata) error
+type OutputFunc func([]byte, types.IOMetadata) error
 
 type Output interface {
-	Execute(object interface{}, metadata inputs.IOMetadata) error
+	Execute(object interface{}, metadata types.IOMetadata) error
 	ResultObject() interface{}
 }
 
@@ -29,7 +30,7 @@ func NewSingleOutput(encodeFn EncodeFunc, outputFn OutputFunc) *singleOutput {
 	}
 }
 
-func (o *singleOutput) Execute(object interface{}, metadata inputs.IOMetadata) error {
+func (o *singleOutput) Execute(object interface{}, metadata types.IOMetadata) error {
 	data, err := o.encodeFn(object)
 	if err != nil {
 		return err
@@ -58,7 +59,7 @@ func NewChainOutput(chainFn inputs.InputResultFunc) *chainOutput {
 	}
 }
 
-func (o *chainOutput) Execute(object interface{}, metadata inputs.IOMetadata) error {
+func (o *chainOutput) Execute(object interface{}, metadata types.IOMetadata) error {
 	return o.chainFn(object, metadata)
 }
 
@@ -75,7 +76,7 @@ func NewEmptyOutput() *emptyOutput {
 	return &emptyOutput{}
 }
 
-func (o *emptyOutput) Execute(object interface{}, metadata inputs.IOMetadata) error {
+func (o *emptyOutput) Execute(object interface{}, metadata types.IOMetadata) error {
 	return nil
 }
 
@@ -83,7 +84,7 @@ func (o *emptyOutput) ResultObject() interface{} {
 	return nil
 }
 
-// ResultOutput:
+// Result Output:
 
 type resultOutput struct {
 	result interface{}
@@ -93,7 +94,7 @@ func NewResultOutput() *resultOutput {
 	return &resultOutput{}
 }
 
-func (o *resultOutput) Execute(object interface{}, metadata inputs.IOMetadata) error {
+func (o *resultOutput) Execute(object interface{}, metadata types.IOMetadata) error {
 	result, err := objects.CopyObject(object)
 	if err != nil {
 		return fmt.Errorf("failed to copy output result object: %v", err)

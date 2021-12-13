@@ -47,13 +47,15 @@ func newAnnounceGetCommand() *cobra.Command {
 }
 
 func announceGetCmdRun(cmd *cobra.Command, args []string) {
-	metadata, err := metadataFromCommand(cmd, WithInput())
+	metadata, output, err := metadataFromCommand(cmd,
+		WithInput(),
+		WithDefaultOutput(outputs.NewEncodePrint(), outputs.NewStdOutput()),
+	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodePrint(), outputs.NewStdOutput())
 
 	batch := actions.NewBatch()
 	batch.Append(actions.NewGetObject(announcePath))
@@ -83,14 +85,16 @@ func newAnnouncePutCommand() *cobra.Command {
 }
 
 func announcePutCmdRun(cmd *cobra.Command, args []string) {
-	metadata, err := metadataFromCommand(cmd, WithInput(), WithOutput())
+	metadata, output, err := metadataFromCommand(cmd,
+		WithInput(),
+		WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
 	metadata.Value = args[0]
 
 	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
-	output := outputs.NewSingleOutput(outputs.NewEncodeBencode(), outputs.NewFileOutput())
 
 	batch := actions.NewBatch()
 	batch.Append(actions.NewVerifyValueIsURI())

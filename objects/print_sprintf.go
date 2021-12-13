@@ -81,7 +81,7 @@ func sprintMap(m map[string]interface{}, opts *printOptions) []string {
 
 func sprintString(str string, opts *printOptions) []string {
 	if len(str) > 256 {
-		return []string{types.EscapeURIString(str[:256])}
+		return []string{types.EscapeURIString(str[:256]) + " ..."}
 	}
 
 	return []string{types.EscapeURIString(str)}
