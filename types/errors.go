@@ -1,5 +1,11 @@
 package types
 
+type FileOutputError interface {
+	Error() string
+	Filename() string
+	Metadata() IOMetadata
+}
+
 type KeysError interface {
 	Error() string
 	Keys() []string

@@ -15,6 +15,7 @@ const (
 	inplaceFlagName      = "inplace"
 	inputFlagName        = "input"
 	jsonValueFlagName    = "json"
+	outputFlagName       = "output"
 	stringValueFlagName  = "string"
 )
 
@@ -25,7 +26,8 @@ func addInputFlags(cmd *cobra.Command) {
 }
 
 func addOutputFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(inplaceFlagName, false, "Output inplace to input file")
+	cmd.Flags().Bool(inplaceFlagName, false, "Replace input file with output")
+	cmd.Flags().String(outputFlagName, "", "Output to file")
 }
 
 func addAnyValueFlags(cmd *cobra.Command) {

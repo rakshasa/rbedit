@@ -89,6 +89,13 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (typ
 
 		opts.outputFn = outputs.NewInplaceFileOutput()
 	}
+	if filename, err := cmd.Flags().GetString(outputFlagName); err == nil && len(filename) != 0 {
+		if opts.outputFn != nil {
+			return types.IOMetadata{}, nil, fmt.Errorf("multiple output destinations")
+		}
+
+		opts.outputFn = outputs.NewFileOutput(filename)
+	}
 
 	if opts.outputFn == nil {
 		return types.IOMetadata{}, nil, fmt.Errorf("missing valid output destination")

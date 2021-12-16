@@ -35,5 +35,16 @@ func printCommandErrorAndExit(cmd *cobra.Command, err error) {
 	}
 
 	fmt.Fprintf(os.Stderr, "%s: %s\n", cmdShort, err.Error())
+
+	switch e := err.(type) {
+	case types.FileOutputError:
+		fmt.Fprintf(os.Stderr, "\n"+
+			"input:  %s\n"+
+			"output: %s\n",
+			e.Metadata().InputFilename,
+			e.Filename(),
+		)
+	}
+
 	os.Exit(1)
 }
