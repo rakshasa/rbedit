@@ -12,6 +12,7 @@ readonly dependencies=(
   # github.com/jackpal/bencode-go@v1.0.0
   github.com/rakshasa/bencode-go@v1.0.2
   github.com/spf13/cobra@v1.2.1
+  github.com/spf13/cobra/doc@v1.2.1
 )
 
 build_dir=$(mktemp -d); readonly build_dir

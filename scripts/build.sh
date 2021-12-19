@@ -2,8 +2,23 @@
 
 set -eux
 
-RBEDIT_ARCH="${RBEDIT_ARCH:-linux}"
-RBEDIT_BUILD_IMAGE="${RBEDIT_BUILD_IMAGE:-build-env}"
+TARGET_OS="${TARGET_OS:-linux}"
+TARGET_ARCH="${TARGET_ARCH:-amd64}"
+BUILD_IMAGE="${BUILD_IMAGE:-build-env}"
+BUILD_MARKDOWN="${BUILD_MARKDOWN:-no}"
+BUILD_DOCS="${BUILD_DOCS:-no}"
+
+if [[ "${BUILD_DOCS}" == "yes" ]]; then
+  BUILD_MARKDOWN="yes"
+elif [[ "${BUILD_DOCS}" != "no" ]]; then
+  echo "BUILD_DOCS must be either 'yes' or 'no'"
+  exit 1
+fi
+
+if ! [[ "${BUILD_MARKDOWN}" =~ ^(yes)|(no)$ ]]; then
+  echo "BUILD_MARKDOWN must be either 'yes' or 'no'"
+  exit 1
+fi
 
 project_root="$(cd "$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)" >/dev/null 2>&1 && pwd)"
 readonly project_root
@@ -13,23 +28,11 @@ readonly rbedit_image="rtdo/rbedit"
 
 build_dir=$(mktemp -d); readonly build_dir
 
-case "${RBEDIT_ARCH}" in
-  "darwin")
-    ;;
-  "linux")
-    ;;
-  *)
-    echo "invalid RBEDIT_ARCH value: '${RBEDIT_ARCH}'"
-    exit 1
-    ;;
-esac
-
 cleanup() {
   local -r retval="$?"
   set +eu
 
   docker rm -f "${container}"
-
   rm -rf "${build_dir}"
 
   set +x
@@ -53,49 +56,73 @@ cleanup() {
 trap cleanup EXIT 1 3 6 8 11 14 15 20 26
 
 dockerfile_no_builder() {
-  sed -n -e '/ AS rbedit-builder$/,$p' Dockerfile | sed "s|^FROM build-env AS rbedit-builder\$|FROM \"${RBEDIT_BUILD_IMAGE}\" AS rbedit-builder|"
+  sed -n -e '/ AS rbedit-builder$/,$p' dockerfile | sed "s|^FROM build-env AS rbedit-builder\$|FROM \"${BUILD_IMAGE}\" AS rbedit-builder|"
 }
 
-cd "${build_dir}"
+( cd "${build_dir}"
 
-git clone --depth 1 file://"${project_root}" ./
+  git clone --depth 1 file://"${project_root}" ./
 
-if [[ "${RBEDIT_BUILD_IMAGE}" == "build-env" ]]; then
+  if [[ "${BUILD_IMAGE}" == "build-env" ]]; then
+    docker build \
+      --progress plain \
+      --file "./dockerfile" \
+      --target "rbedit" \
+      --tag "${rbedit_image}"\
+      --build-arg "TARGET_OS=${TARGET_OS}" \
+      --build-arg "TARGET_ARCH=${TARGET_ARCH}" \
+      --build-arg "BUILD_MARKDOWN=${BUILD_MARKDOWN}" \
+      .
+
+    readonly build_file="./dockerfile"
+  else
+    echo "Using '${BUILD_IMAGE}' as the build image."
+
+    readonly build_file="./dockerfile.build"
+    dockerfile_no_builder > "${build_file}"
+
+    echo
+    cat "${build_file}"
+    echo
+  fi
+
   docker build \
-    --progress plain \
-    --file "./Dockerfile" \
-    --target "rbedit" \
     --tag "${rbedit_image}"\
-    --build-arg "TARGET_ARCH=${RBEDIT_ARCH}" \
+    --progress plain \
+    --file "${build_file}" \
+    --target "rbedit-builder" \
+    --build-arg "TARGET_OS=${TARGET_OS}" \
+    --build-arg "TARGET_ARCH=${TARGET_ARCH}" \
+    --build-arg "BUILD_MARKDOWN=${BUILD_MARKDOWN}" \
     .
+)
 
-  readonly build_file="./Dockerfile"
-else
-  echo "Using '${RBEDIT_BUILD_IMAGE} build image."
+( cd "${project_root}"
 
-  readonly build_file="./dockerfile.build"
-  dockerfile_no_builder > "${build_file}"
+  docker create -i --rm \
+    --name "${container}" \
+    "${rbedit_image}"
 
-  echo
-  cat "${build_file}"
-  echo
-fi
+  mkdir -p ./build/
+  docker cp "${container}:/rbedit-${TARGET_OS}-${TARGET_ARCH}" ./build/
 
-docker build \
-  --progress plain \
-  --file "${build_file}" \
-  --target "rbedit" \
-  --tag "${rbedit_image}"\
-  --build-arg "TARGET_ARCH=${RBEDIT_ARCH}" \
-  .
+  if [[ "${BUILD_MARKDOWN}" == "yes" ]]; then
+    docker cp "${container}:/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./build/
+  fi
 
-docker create -i --rm \
-  --name "${container}" \
-  "${rbedit_image}"
+  if [[ "${BUILD_DOCS}" == "yes" ]]; then
+    if ! "./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" &> /dev/null; then
+      echo "could not run ./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}"
+      exit 1
+    fi
 
-mkdir -p "${project_root}/build/"
-docker cp "${container}:/rbedit" "${project_root}/build/rbedit-${RBEDIT_ARCH}"
+    rm -rf ./docs/cli
+    mkdir -p ./docs/cli
 
-cp "${project_root}/build/rbedit-${RBEDIT_ARCH}" "${project_root}/build/rbedit"
+    "./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./docs/cli
+
+    git add ./docs/cli
+  fi
+)
 
 success="yes"
