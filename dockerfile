@@ -58,3 +58,13 @@ ARG TARGET_ARCH=amd64
 COPY --from=rbedit-builder "/rbedit-${TARGET_OS}-${TARGET_ARCH}" /rbedit
 
 ENTRYPOINT ["/rbedit"]
+
+
+FROM scratch AS rbedit-markdown
+
+ARG TARGET_OS=linux
+ARG TARGET_ARCH=amd64
+
+COPY --from=rbedit-builder "/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" /rbedit-markdown
+
+ENTRYPOINT ["/rbedit-markdown"]

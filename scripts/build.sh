@@ -26,8 +26,6 @@ readonly project_root
 readonly container="rtdo-build-rbedit"
 readonly rbedit_image="rtdo/rbedit"
 
-build_dir=$(mktemp -d); readonly build_dir
-
 cleanup() {
   local -r retval="$?"
   set +eu
@@ -37,7 +35,7 @@ cleanup() {
 
   set +x
 
-  if [[ "${success:-no}" == "yes" ]]; then
+  if (( retval == 0 )); then
     echo
     echo "***********************"
     echo "*** Build Succeeded ***"
@@ -53,11 +51,13 @@ cleanup() {
 
   exit "${retval}"
 }
-trap cleanup EXIT 1 3 6 8 11 14 15 20 26
+trap cleanup EXIT
 
 dockerfile_no_builder() {
   sed -n -e '/ AS rbedit-builder$/,$p' dockerfile | sed "s|^FROM build-env AS rbedit-builder\$|FROM \"${BUILD_IMAGE}\" AS rbedit-builder|"
 }
+
+build_dir=$(mktemp -d); readonly build_dir
 
 ( cd "${build_dir}"
 
