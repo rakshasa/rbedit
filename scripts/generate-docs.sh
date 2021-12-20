@@ -8,12 +8,13 @@ readonly project_root
 readonly rbedit_markdown_image="rtdo/rbedit-markdown"
 
 build_dir=$(mktemp -d); readonly build_dir
+wiki_dir=$(mktemp -d); readonly wiki_dir
 
 cleanup() {
   local -r retval="$?"
   set +eu
 
-  rm -rf "${build_dir}"
+  rm -rf "${build_dir}" "${wiki_dir}"
 
   set +x
   if (( retval == 0 )); then
@@ -65,4 +66,12 @@ trap cleanup EXIT
     /docs/cli
 
   git add ./docs/cli
+)
+
+( cd "${wiki_dir}"
+
+  git clone git@github.com:rakshasa/rbedit.wiki.git ./
+  cp "${project_root}"/docs/cli/rbedit*.md ./
+
+  sed -i '' -e 's/\[\([a-z -]*\)\](\([a-z _-]*\).md)/[[\1\|\2.md]]/' ./rbedit*.md
 )

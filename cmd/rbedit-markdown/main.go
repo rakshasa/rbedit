@@ -32,6 +32,7 @@ func init() {
 			fmt.Printf("destination: %s\n\n", destPath)
 
 			rbeditCmd := common.NewRootCommand()
+			rbeditCmd.DisableAutoGenTag = true
 
 			if err := doc.GenMarkdownTree(rbeditCmd, destPath); err != nil {
 				os.Exit(1)
