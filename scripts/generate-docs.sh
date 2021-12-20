@@ -71,7 +71,12 @@ trap cleanup EXIT
 ( cd "${wiki_dir}"
 
   git clone git@github.com:rakshasa/rbedit.wiki.git ./
-  cp "${project_root}"/docs/cli/rbedit*.md ./
+  git rm ./rbedit*.md || :
 
-  sed -i '' -e 's/\[\([a-z -]*\)\](\([a-z _-]*\).md)/[[\1\|\2.md]]/' ./rbedit*.md
+  cp "${project_root}"/docs/cli/rbedit*.md ./
+  sed -i '' -e 's/\[\([a-z -]*\)\](\([a-z _-]*\).md)/[[\1\|\2]]/' ./rbedit*.md
+
+  git add ./rbedit*.md
+  git commit -m "Updated cobra-generated documents."
+  git push
 )
