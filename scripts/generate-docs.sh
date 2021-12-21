@@ -77,6 +77,8 @@ trap cleanup EXIT
   sed -i '' -e 's/\[\([a-z -]*\)\](\([a-z _-]*\).md)/[[\1\|\2]]/' ./rbedit*.md
 
   git add ./rbedit*.md
-  git commit -m "Updated cobra-generated documents."
-  git push
+
+  if git commit -m "Updated cobra-generated documents."; then
+    git push
+  fi
 )

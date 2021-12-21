@@ -31,10 +31,10 @@ func init() {
 			fmt.Printf("generating markdown documentation...\n")
 			fmt.Printf("destination: %s\n\n", destPath)
 
-			rbeditCmd := common.NewRootCommand()
-			rbeditCmd.DisableAutoGenTag = true
+			rootCmd := common.NewRootCommand()
+			common.AddRootCommandDocs(rootCmd)
 
-			if err := doc.GenMarkdownTree(rbeditCmd, destPath); err != nil {
+			if err := doc.GenMarkdownTree(rootCmd, destPath); err != nil {
 				os.Exit(1)
 			}
 

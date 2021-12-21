@@ -48,3 +48,21 @@ func printCommandErrorAndExit(cmd *cobra.Command, err error) {
 
 	os.Exit(1)
 }
+
+func docStringToMarkdown(data string) string {
+	return strings.Trim(data, " \n")
+}
+
+func docSubCommandsToMarkdown(cmd *cobra.Command) string {
+	if !cmd.HasSubCommands() {
+		return ""
+	}
+
+	str := "\n\n\n### Available Commands\n\n```\n"
+
+	for _, childCmd := range cmd.Commands() {
+		str += fmt.Sprintf("  %-*s %s\n", childCmd.NamePadding(), childCmd.Name(), childCmd.Short)
+	}
+
+	return str + "```\n"
+}

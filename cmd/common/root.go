@@ -1,10 +1,9 @@
 package common
 
 import (
+	"github.com/rakshasa/rbedit/embedded"
 	"github.com/spf13/cobra"
 )
-
-// TODO: Add custom PositionalArgs.
 
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -12,7 +11,6 @@ func NewRootCommand() *cobra.Command {
 		Short: "A dependency-free bencode editor",
 		// TODO: Use git tag or commit.
 		Version: "0.0",
-		Args:    cobra.ExactArgs(0),
 		Run:     func(cmd *cobra.Command, args []string) { printCommandUsageAndExit(cmd) },
 	}
 
@@ -26,4 +24,12 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newRemoveCommand())
 
 	return cmd
+}
+
+func AddRootCommandDocs(cmd *cobra.Command) {
+	cmd.Long = docStringToMarkdown(embedded.DocsRbeditSynopsisMarkdown)
+	cmd.Long += docSubCommandsToMarkdown(cmd)
+
+	cmd.Run = nil
+	cmd.RunE = nil
 }
