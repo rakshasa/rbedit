@@ -1,11 +1,11 @@
 ## rbedit announce-list clear-category
 
-Clear an announce list category
+Clear category
 
 ### Synopsis
 
 
-Clear an announce list category
+Clear category
 
 ```
 rbedit announce-list clear-category

@@ -1,20 +1,20 @@
-## rbedit announce-list clear
+## rbedit announce-list clear-all
 
-Clear announce list
+Clear all trackers and categories
 
 ### Synopsis
 
 
-Clear announce list
+Clear all trackers and categories
 
 ```
-rbedit announce-list clear
+rbedit announce-list clear-all
 ```
 
 ### Options
 
 ```
-  -h, --help            help for clear
+  -h, --help            help for clear-all
       --inplace         Replace input file with output
   -i, --input string    Input a file by path
       --output string   Output to file

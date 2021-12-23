@@ -1,11 +1,11 @@
 ## rbedit announce-list get-category
 
-Get announce-list category
+Get list of tracker urls in category
 
 ### Synopsis
 
 
-Get announce-list category
+Get list of tracker urls in category
 
 ```
 rbedit announce-list get-category [OPTIONS] INDEX

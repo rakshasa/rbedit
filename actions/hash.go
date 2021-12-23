@@ -5,13 +5,12 @@ import (
 	"fmt"
 
 	"github.com/rakshasa/bencode-go"
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 
-func NewSHA1Action(output outputs.Output, keys []string, target types.ResultTarget) inputs.InputResultFunc {
+func NewSHA1Action(output outputs.Output, keys []string, target types.ResultTarget) types.InputResultFunc {
 	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		object, err := objects.LookupKeyPath(rootObj, keys)
 		if err != nil {
@@ -43,7 +42,7 @@ func NewSHA1Action(output outputs.Output, keys []string, target types.ResultTarg
 }
 
 func NewSHA1(keys []string, target types.ResultTarget) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewSHA1Action(output, keys, target)
 	}
 }
@@ -52,7 +51,7 @@ func NewCalculateInfoHash() ActionFunc {
 	return NewSHA1([]string{"info"}, types.MetadataResultTarget)
 }
 
-func NewCachedInfoHashAction(output outputs.Output) inputs.InputResultFunc {
+func NewCachedInfoHashAction(output outputs.Output) types.InputResultFunc {
 	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		if len(metadata.InfoHash) == 0 {
 			return fmt.Errorf("info hash not calculated")
@@ -67,7 +66,7 @@ func NewCachedInfoHashAction(output outputs.Output) inputs.InputResultFunc {
 }
 
 func NewCachedInfoHash() ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewCachedInfoHashAction(output)
 	}
 }

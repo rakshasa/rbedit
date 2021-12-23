@@ -3,7 +3,6 @@ package outputs
 import (
 	"fmt"
 
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/types"
 )
@@ -50,10 +49,10 @@ func (o *singleOutput) ResultObject() interface{} {
 // ChainOutput:
 
 type chainOutput struct {
-	chainFn inputs.InputResultFunc
+	chainFn types.InputResultFunc
 }
 
-func NewChainOutput(chainFn inputs.InputResultFunc) *chainOutput {
+func NewChainOutput(chainFn types.InputResultFunc) *chainOutput {
 	return &chainOutput{
 		chainFn: chainFn,
 	}

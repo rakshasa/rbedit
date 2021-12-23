@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 
-func NewGetObjectAction(output outputs.Output, keys []string) inputs.InputResultFunc {
+func NewGetObjectAction(output outputs.Output, keys []string) types.InputResultFunc {
 	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, keys)
 		if err != nil {
@@ -25,12 +24,12 @@ func NewGetObjectAction(output outputs.Output, keys []string) inputs.InputResult
 }
 
 func NewGetObject(keys []string) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewGetObjectAction(output, keys)
 	}
 }
 
-func NewGetListIndexAction(output outputs.Output, indexString string) inputs.InputResultFunc {
+func NewGetListIndexAction(output outputs.Output, indexString string) types.InputResultFunc {
 	return func(object interface{}, metadata types.IOMetadata) error {
 		idx, err := strconv.Atoi(indexString)
 		if err != nil || idx < 0 {
@@ -53,12 +52,12 @@ func NewGetListIndexAction(output outputs.Output, indexString string) inputs.Inp
 }
 
 func NewGetListIndex(indexString string) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewGetListIndexAction(output, indexString)
 	}
 }
 
-func NewGetAnnounceListAppendTrackerAction(output outputs.Output, categoryIdx int, trackers []string) inputs.InputResultFunc {
+func NewGetAnnounceListAppendTrackerAction(output outputs.Output, categoryIdx int, trackers []string) types.InputResultFunc {
 	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		obj, err := objects.LookupKeyPath(rootObj, []string{"announce-list"})
 		if err != nil {
@@ -89,7 +88,7 @@ func NewGetAnnounceListAppendTrackerAction(output outputs.Output, categoryIdx in
 	}
 }
 
-func NewPutAction(output outputs.Output, keys []string) inputs.InputResultFunc {
+func NewPutAction(output outputs.Output, keys []string) types.InputResultFunc {
 	return func(rootObj interface{}, metadata types.IOMetadata) error {
 		rootObj, err := objects.SetObject(rootObj, metadata.Value, keys)
 		if err != nil {
@@ -104,12 +103,12 @@ func NewPutAction(output outputs.Output, keys []string) inputs.InputResultFunc {
 }
 
 func NewPut(keys []string) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewPutAction(output, keys)
 	}
 }
 
-func NewRemoveAction(output outputs.Output, keys []string) inputs.InputResultFunc {
+func NewRemoveAction(output outputs.Output, keys []string) types.InputResultFunc {
 	return func(rootObject interface{}, metadata types.IOMetadata) error {
 		rootObject, err := objects.RemoveObject(rootObject, keys)
 		if err != nil {
@@ -123,7 +122,7 @@ func NewRemoveAction(output outputs.Output, keys []string) inputs.InputResultFun
 	}
 }
 
-func NewReplaceWithBatchResultAction(output outputs.Output, keys []string, actionsFn ...ActionFunc) inputs.InputResultFunc {
+func NewReplaceWithBatchResultAction(output outputs.Output, keys []string, actionsFn ...ActionFunc) types.InputResultFunc {
 	batch := NewBatch()
 
 	for _, fn := range actionsFn {
@@ -149,7 +148,7 @@ func NewReplaceWithBatchResultAction(output outputs.Output, keys []string, actio
 }
 
 func NewReplaceWithBatchResult(keys []string, actionsFn ...ActionFunc) ActionFunc {
-	return func(output outputs.Output) inputs.InputResultFunc {
+	return func(output outputs.Output) types.InputResultFunc {
 		return NewReplaceWithBatchResultAction(output, keys, actionsFn...)
 	}
 }

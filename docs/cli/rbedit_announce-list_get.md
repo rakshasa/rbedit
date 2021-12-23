@@ -1,11 +1,11 @@
 ## rbedit announce-list get
 
-Get announce-list url
+Get tracker url
 
 ### Synopsis
 
 
-Get announce-list url
+Get tracker url
 
 ```
 rbedit announce-list get [OPTIONS]

@@ -1,12 +1,11 @@
 package actions
 
 import (
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 
-type ActionFunc func(outputs.Output) inputs.InputResultFunc
+type ActionFunc func(outputs.Output) types.InputResultFunc
 
 type batch struct {
 	actions []ActionFunc
@@ -22,7 +21,7 @@ func (b *batch) Append(actionFn ActionFunc) {
 	b.actions = append(b.actions, actionFn)
 }
 
-func (b *batch) CreateFunction(output outputs.Output) inputs.InputResultFunc {
+func (b *batch) CreateFunction(output outputs.Output) types.InputResultFunc {
 	if len(b.actions) == 0 {
 		return func(rootObj interface{}, metadata types.IOMetadata) error {
 			return nil

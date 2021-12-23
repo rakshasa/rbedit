@@ -39,8 +39,8 @@ func newAnnounceListCommand() *cobra.Command {
 
 func newAnnounceListAppendTrackerCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "append-tracker [OPTIONS] INDEX URI...",
-		Short: "Append tracker(s) to a category index",
+		Use:   "append-tracker [OPTIONS] INDEX URL...",
+		Short: "Append tracker urls to category",
 		Args:  cobra.MinimumNArgs(2),
 		Run:   announceListAppendTrackerCmdRun,
 	}
@@ -85,8 +85,8 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 
 func newAnnounceListClearCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "clear",
-		Short: "Clear announce list",
+		Use:   "clear-all",
+		Short: "Clear all trackers and categories",
 		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -120,7 +120,7 @@ func newAnnounceListClearCommand() *cobra.Command {
 func newAnnounceListClearCategoryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear-category",
-		Short: "Clear an announce list category",
+		Short: "Clear category",
 		Args:  cobra.ExactArgs(1),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -161,7 +161,7 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 func newAnnounceListGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [OPTIONS]",
-		Short: "Get announce-list url",
+		Short: "Get tracker url",
 		Args:  cobra.ExactArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -196,7 +196,7 @@ func newAnnounceListGetCommand() *cobra.Command {
 func newAnnounceListGetCategoryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-category [OPTIONS] INDEX",
-		Short: "Get announce-list category",
+		Short: "Get list of tracker urls in category",
 		// TODO: Create a function that verifies valid positive index.
 		Args: cobra.ExactArgs(1),
 

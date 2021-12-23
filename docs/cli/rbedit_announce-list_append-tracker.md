@@ -1,14 +1,14 @@
 ## rbedit announce-list append-tracker
 
-Append tracker(s) to a category index
+Append tracker urls to category
 
 ### Synopsis
 
 
-Append tracker(s) to a category index
+Append tracker urls to category
 
 ```
-rbedit announce-list append-tracker [OPTIONS] INDEX URI...
+rbedit announce-list append-tracker [OPTIONS] INDEX URL...
 ```
 
 ### Options

@@ -11,13 +11,6 @@ import (
 
 type DecodeFunc func([]byte) (interface{}, error)
 type InputFunc func(types.IOMetadata) ([]byte, error)
-type InputResultFunc func(interface{}, types.IOMetadata) error
-
-type Input interface {
-	// Executed once for every distinct root bencoded data object in
-	// the input.
-	Execute(metadata types.IOMetadata, fn InputResultFunc) error
-}
 
 // SingleInput:
 
@@ -33,7 +26,7 @@ func NewSingleInput(decodeFn DecodeFunc, inputFn InputFunc) *singleInput {
 	}
 }
 
-func (o *singleInput) Execute(metadata types.IOMetadata, resultFn InputResultFunc) error {
+func (o *singleInput) Execute(metadata types.IOMetadata, resultFn types.InputResultFunc) error {
 	data, err := o.inputFn(metadata)
 	if err != nil {
 		return err
