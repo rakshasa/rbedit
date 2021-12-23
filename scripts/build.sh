@@ -64,16 +64,6 @@ build_dir=$(mktemp -d); readonly build_dir
   git clone --depth 1 file://"${project_root}" ./
 
   if [[ "${BUILD_IMAGE}" == "build-env" ]]; then
-    docker build \
-      --progress plain \
-      --file "./dockerfile" \
-      --target "rbedit" \
-      --tag "${rbedit_image}"\
-      --build-arg "TARGET_OS=${TARGET_OS}" \
-      --build-arg "TARGET_ARCH=${TARGET_ARCH}" \
-      --build-arg "BUILD_MARKDOWN=${BUILD_MARKDOWN}" \
-      .
-
     readonly build_file="./dockerfile"
   else
     echo "Using '${BUILD_IMAGE}' as the build image."
@@ -87,10 +77,10 @@ build_dir=$(mktemp -d); readonly build_dir
   fi
 
   docker build \
-    --tag "${rbedit_image}"\
     --progress plain \
-    --file "${build_file}" \
+    --tag "${rbedit_image}"\
     --target "rbedit-builder" \
+    --file "${build_file}" \
     --build-arg "TARGET_OS=${TARGET_OS}" \
     --build-arg "TARGET_ARCH=${TARGET_ARCH}" \
     --build-arg "BUILD_MARKDOWN=${BUILD_MARKDOWN}" \
