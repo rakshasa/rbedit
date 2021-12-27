@@ -8,9 +8,10 @@ import (
 
 	"github.com/rakshasa/bencode-go"
 	"github.com/rakshasa/rbedit/objects"
+	"github.com/rakshasa/rbedit/types"
 )
 
-func NewEncodeBencode() EncodeFunc {
+func NewEncodeBencode() types.EncodeFunc {
 	return func(object interface{}) ([]byte, error) {
 		var buf bytes.Buffer
 
@@ -22,13 +23,13 @@ func NewEncodeBencode() EncodeFunc {
 	}
 }
 
-func NewEncodePrint() EncodeFunc {
+func NewEncodePrint() types.EncodeFunc {
 	return func(object interface{}) ([]byte, error) {
 		return []byte(objects.SprintObject(object)), nil
 	}
 }
 
-func NewEncodePrintList() EncodeFunc {
+func NewEncodePrintList() types.EncodeFunc {
 	return func(object interface{}) ([]byte, error) {
 		stringList, err := SprintListOfStrings(object)
 		if err != nil {
@@ -44,7 +45,7 @@ func NewEncodePrintList() EncodeFunc {
 	}
 }
 
-func NewEncodePrintAsListOfLists() EncodeFunc {
+func NewEncodePrintAsListOfLists() types.EncodeFunc {
 	return func(object interface{}) ([]byte, error) {
 		parentList, ok := objects.AsList(object)
 		if !ok {
@@ -67,7 +68,7 @@ func NewEncodePrintAsListOfLists() EncodeFunc {
 	}
 }
 
-func NewEncodeAsHexString() EncodeFunc {
+func NewEncodeAsHexString() types.EncodeFunc {
 	return func(object interface{}) ([]byte, error) {
 		str, ok := objects.AsString(object)
 		if !ok {

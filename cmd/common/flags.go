@@ -29,9 +29,13 @@ func addInputFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(inputBatchFlagName, false, "Input as batch of filenames")
 }
 
-func addOutputFlags(cmd *cobra.Command) {
+func addDataOutputFlags(cmd *cobra.Command) {
+	cmd.Flags().VarP(&nonEmptyString{}, outputFlagName, "o", "Output destination")
+}
+
+func addFileOutputFlags(cmd *cobra.Command) {
+	addDataOutputFlags(cmd)
 	cmd.Flags().Bool(outputInplaceFlagName, false, "Output to source file, replacing it")
-	cmd.Flags().VarP(&nonEmptyString{}, outputFlagName, "o", "Output to file")
 }
 
 func addAnyValueFlags(cmd *cobra.Command) {

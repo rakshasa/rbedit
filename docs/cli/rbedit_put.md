@@ -21,7 +21,7 @@ rbedit put [OPTIONS] KEY-PATH...
   -i, --input string     Input source
       --int int          Integer value
       --json string      JSON value
-  -o, --output string    Output to file
+  -o, --output string    Output destination
       --string string    String value
 ```
 

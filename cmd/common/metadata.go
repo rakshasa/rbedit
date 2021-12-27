@@ -12,23 +12,23 @@ import (
 
 type metadataOpFunction func(*metadataOptions)
 type metadataGetFlagFunction func(*flag.FlagSet, string) (interface{}, bool, error)
-type metadataOutputTargetFlagFunction func(*flag.FlagSet, string) (outputs.OutputFunc, bool, error)
+type metadataOutputTargetFlagFunction func(*flag.FlagSet, string) (types.OutputFunc, bool, error)
 
 type metadataOptions struct {
-	defaultDecodeFn inputs.DecodeFunc
-	defaultEncodeFn outputs.EncodeFunc
-	defaultOutputFn outputs.OutputFunc
+	defaultDecodeFn types.DecodeFunc
+	defaultEncodeFn types.EncodeFunc
+	defaultOutputFn types.OutputFunc
 
 	getValue map[string]metadataGetFlagFunction
 }
 
-func WithDefaultInput(defaultDecodeFn inputs.DecodeFunc) metadataOpFunction {
+func WithDefaultInput(defaultDecodeFn types.DecodeFunc) metadataOpFunction {
 	return func(opts *metadataOptions) {
 		opts.defaultDecodeFn = defaultDecodeFn
 	}
 }
 
-func WithDefaultOutput(defaultEncodeFn outputs.EncodeFunc, defaultOutputFn outputs.OutputFunc) metadataOpFunction {
+func WithDefaultOutput(defaultEncodeFn types.EncodeFunc, defaultOutputFn types.OutputFunc) metadataOpFunction {
 	return func(opts *metadataOptions) {
 		opts.defaultEncodeFn = defaultEncodeFn
 		opts.defaultOutputFn = defaultOutputFn
@@ -69,29 +69,19 @@ func hasChangedFlags(cmd *cobra.Command) bool {
 	return result
 }
 
-func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (types.IOMetadata, types.Input, outputs.Output, error) {
+func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (types.IOMetadata, types.Input, types.Output, error) {
 	opts := newMetadataOptions(options)
 
 	metadata := types.IOMetadata{}
 
-	inputFn, err := metadataSetInputSourceAndType(&metadata, cmd.Flags())
+	input, err := inputSourceAndTypeFromFlagSet(cmd.Flags(), opts)
 	if err != nil {
 		return types.IOMetadata{}, nil, nil, err
 	}
-	outputFn, err := metadataSetOutputDestinatinoAndType(&metadata, cmd.Flags(), opts)
+	output, err := outputDestinatinoAndTypeFromFlagSet(cmd.Flags(), opts)
 	if err != nil {
 		return types.IOMetadata{}, nil, nil, err
 	}
-
-	if opts.defaultDecodeFn == nil {
-		return types.IOMetadata{}, nil, nil, fmt.Errorf("missing valid input decoder")
-	}
-	if opts.defaultEncodeFn == nil {
-		return types.IOMetadata{}, nil, nil, fmt.Errorf("missing valid output encoder")
-	}
-
-	input := inputs.NewSingleInput(opts.defaultDecodeFn, inputFn)
-	output := outputs.NewSingleOutput(opts.defaultEncodeFn, outputFn)
 
 	if opts.getValue != nil {
 		for name, fn := range opts.getValue {
@@ -118,7 +108,7 @@ func metadataFromCommand(cmd *cobra.Command, options ...metadataOpFunction) (typ
 	return metadata, input, output, nil
 }
 
-func metadataSetInputSourceAndType(metadata *types.IOMetadata, flagSet *flag.FlagSet) (inputs.InputFunc, error) {
+func inputSourceAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOptions) (types.Input, error) {
 	var inputSource string
 	var inputType string
 
@@ -141,26 +131,27 @@ func metadataSetInputSourceAndType(metadata *types.IOMetadata, flagSet *flag.Fla
 		}
 	}
 
+	if opts.defaultDecodeFn == nil {
+		return nil, fmt.Errorf("missing valid input decoder")
+	}
 	if len(inputSource) == 0 {
 		return nil, fmt.Errorf("missing valid input source")
 	}
 
 	switch inputType {
 	case types.BatchInputTypeName:
-		// inputFn = inputs.NewBatchInput(inputSource)
-		return nil, fmt.Errorf("unimplemented input source type: %s", inputType)
+		// return inputs.NewParallelBatchInput(opts.defaultDecodeFn, inputs.NewBatchFilenameInput(inputSource)), nil
+		return inputs.NewSequentialBatchInput(opts.defaultDecodeFn, inputs.NewBatchFileInput(inputSource)), nil
 
 	case types.FileInputTypeName, "":
-		// TODO: Set this in inputFn
-		metadata.InputFilename = inputSource
-		return inputs.NewFileInput(), nil
+		return inputs.NewSingleInput(opts.defaultDecodeFn, inputs.NewFileInput(inputSource)), nil
 
 	default:
 		return nil, fmt.Errorf("unknown input source type: %s", inputType)
 	}
 }
 
-func metadataSetOutputDestinatinoAndType(metadata *types.IOMetadata, flagSet *flag.FlagSet, opts *metadataOptions) (outputs.OutputFunc, error) {
+func outputDestinatinoAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOptions) (types.Output, error) {
 	var outputValue string
 	var outputType string
 
@@ -183,9 +174,13 @@ func metadataSetOutputDestinatinoAndType(metadata *types.IOMetadata, flagSet *fl
 		}
 	}
 
+	if opts.defaultEncodeFn == nil {
+		return nil, fmt.Errorf("missing valid output encoder")
+	}
+
 	switch outputType {
 	case types.InplaceOutputTypeName:
-		return outputs.NewInplaceFileOutput(), nil
+		return outputs.NewSingleOutput(opts.defaultEncodeFn, outputs.NewInplaceFileOutput()), nil
 	}
 
 	if opts.defaultOutputFn == nil {
@@ -194,15 +189,14 @@ func metadataSetOutputDestinatinoAndType(metadata *types.IOMetadata, flagSet *fl
 
 	switch outputType {
 	case "":
-		return opts.defaultOutputFn, nil
+		return outputs.NewSingleOutput(opts.defaultEncodeFn, opts.defaultOutputFn), nil
 
 	case types.FileInputTypeName:
 		if len(outputValue) == 0 {
 			return nil, fmt.Errorf("missing valid output destination")
 		}
 
-		// TODO: Do not allow batch ops, set flag in metadata.
-		return outputs.NewFileOutput(outputValue), nil
+		return outputs.NewSingleOutput(opts.defaultEncodeFn, outputs.NewFileOutput(outputValue)), nil
 
 	default:
 		return nil, fmt.Errorf("unknown output destination type: %s", outputType)

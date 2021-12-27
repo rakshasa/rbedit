@@ -18,7 +18,7 @@ func newPutCommand() *cobra.Command {
 
 	setupDefaultCommand(cmd)
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 	addAnyValueFlags(cmd)
 
 	return cmd

@@ -11,7 +11,16 @@ type Input interface {
 	Execute(metadata IOMetadata, fn InputResultFunc) error
 }
 
+type Output interface {
+	Execute(object interface{}, metadata IOMetadata) error
+	ResultObject() interface{}
+}
+
+type EncodeFunc func(interface{}) ([]byte, error)
+type DecodeFunc func([]byte) (interface{}, error)
+type InputFunc func(IOMetadata) (IOMetadata, []byte, error)
 type InputResultFunc func(interface{}, IOMetadata) error
+type OutputFunc func([]byte, IOMetadata) error
 
 type ResultTarget int
 

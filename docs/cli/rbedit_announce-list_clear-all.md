@@ -18,7 +18,7 @@ rbedit announce-list clear-all
   -h, --help            help for clear-all
       --inplace         Output to source file, replacing it
   -i, --input string    Input source
-  -o, --output string   Output to file
+  -o, --output string   Output destination
 ```
 
 ### SEE ALSO

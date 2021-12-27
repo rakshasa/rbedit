@@ -19,7 +19,7 @@ func newRemoveCommand() *cobra.Command {
 
 	setupDefaultCommand(cmd)
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 
 	return cmd
 }

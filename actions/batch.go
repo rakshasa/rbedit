@@ -5,7 +5,7 @@ import (
 	"github.com/rakshasa/rbedit/types"
 )
 
-type ActionFunc func(outputs.Output) types.InputResultFunc
+type ActionFunc func(types.Output) types.InputResultFunc
 
 type batch struct {
 	actions []ActionFunc
@@ -21,7 +21,7 @@ func (b *batch) Append(actionFn ActionFunc) {
 	b.actions = append(b.actions, actionFn)
 }
 
-func (b *batch) CreateFunction(output outputs.Output) types.InputResultFunc {
+func (b *batch) CreateFunction(output types.Output) types.InputResultFunc {
 	if len(b.actions) == 0 {
 		return func(rootObj interface{}, metadata types.IOMetadata) error {
 			return nil

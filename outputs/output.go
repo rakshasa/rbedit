@@ -7,22 +7,14 @@ import (
 	"github.com/rakshasa/rbedit/types"
 )
 
-type EncodeFunc func(interface{}) ([]byte, error)
-type OutputFunc func([]byte, types.IOMetadata) error
-
-type Output interface {
-	Execute(object interface{}, metadata types.IOMetadata) error
-	ResultObject() interface{}
-}
-
 // SingleOutput:
 
 type singleOutput struct {
-	encodeFn EncodeFunc
-	outputFn OutputFunc
+	encodeFn types.EncodeFunc
+	outputFn types.OutputFunc
 }
 
-func NewSingleOutput(encodeFn EncodeFunc, outputFn OutputFunc) *singleOutput {
+func NewSingleOutput(encodeFn types.EncodeFunc, outputFn types.OutputFunc) *singleOutput {
 	return &singleOutput{
 		encodeFn: encodeFn,
 		outputFn: outputFn,

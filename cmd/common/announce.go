@@ -42,6 +42,7 @@ func newAnnounceGetCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	addInputFlags(cmd)
+	addDataOutputFlags(cmd)
 
 	return cmd
 }
@@ -77,7 +78,7 @@ func newAnnouncePutCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 
 	return cmd
 }

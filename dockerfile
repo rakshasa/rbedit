@@ -4,11 +4,8 @@ ARG ALPINE_VERSION=3.15
 FROM alpine:${ALPINE_VERSION} AS build-env
 
 ARG GO_VERSION=1.17.2
-
 ARG BUILD_OS=linux
 ARG BUILD_ARCH=amd64
-ARG TARGET_OS=linux
-ARG TARGET_ARCH=amd64
 
 WORKDIR /build
 
@@ -23,8 +20,6 @@ RUN set -eux; \
   rm -f go.tar.gz
 
 ENV GOPATH=/go
-ENV GOOS="${TARGET_OS}"
-ENV GOARCH="${TARGET_ARCH}"
 ENV GOFLAGS="-v -mod=readonly -mod=vendor"
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
@@ -36,24 +31,30 @@ RUN go version
 
 FROM build-env AS rbedit-builder
 
-ARG TARGET_OS=linux
-ARG TARGET_ARCH=amd64
+ARG TARGET_OS
+ARG TARGET_ARCH
 ARG BUILD_MARKDOWN=no
+
+ENV GOOS="${TARGET_OS}"
+ENV GOARCH="${TARGET_ARCH}"
 
 COPY ./ ./
 
 RUN set -eux; \
-  go build -ldflags "-s -w -extldflags '-static  -fno-PIC'" -o "/rbedit-${TARGET_OS}-${TARGET_ARCH}" ./cmd/rbedit; \
+  echo "GOOS=${GOOS}"; \
+  echo "GOARCH=${GOARCH}"; \
+  \
+  go build -ldflags "-s -w -extldflags '-static  -fno-PIC'" -o "/rbedit-${GOOS}-${GOARCH}" ./cmd/rbedit; \
   \
   if [ "${BUILD_MARKDOWN}" == "yes" ]; then \
-    go build -ldflags "-s -w -extldflags '-static  -fno-PIC'" -o "/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./cmd/rbedit-markdown; \
+    go build -ldflags "-s -w -extldflags '-static  -fno-PIC'" -o "/rbedit-markdown-${GOOS}-${GOARCH}" ./cmd/rbedit-markdown; \
   fi
 
 
 FROM scratch AS rbedit
 
-ARG TARGET_OS=linux
-ARG TARGET_ARCH=amd64
+ARG TARGET_OS
+ARG TARGET_ARCH
 
 COPY --from=rbedit-builder "/rbedit-${TARGET_OS}-${TARGET_ARCH}" /rbedit
 
@@ -62,8 +63,8 @@ ENTRYPOINT ["/rbedit"]
 
 FROM scratch AS rbedit-markdown
 
-ARG TARGET_OS=linux
-ARG TARGET_ARCH=amd64
+ARG TARGET_OS
+ARG TARGET_ARCH
 
 COPY --from=rbedit-builder "/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" /rbedit-markdown
 

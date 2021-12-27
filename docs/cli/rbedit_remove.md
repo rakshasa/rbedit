@@ -18,7 +18,7 @@ rbedit remove [OPTIONS] KEY-PATH...
   -h, --help            help for remove
       --inplace         Output to source file, replacing it
   -i, --input string    Input source
-  -o, --output string   Output to file
+  -o, --output string   Output destination
 ```
 
 ### SEE ALSO

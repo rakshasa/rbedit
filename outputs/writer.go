@@ -17,7 +17,7 @@ func (e *fileOutputError) Error() string              { return e.err }
 func (e *fileOutputError) Filename() string           { return e.filename }
 func (e *fileOutputError) Metadata() types.IOMetadata { return e.metadata }
 
-func NewInplaceFileOutput() OutputFunc {
+func NewInplaceFileOutput() types.OutputFunc {
 	return func(data []byte, metadata types.IOMetadata) error {
 		if err := os.WriteFile(metadata.InputFilename, data, 0666); err != nil {
 			if pathErr, ok := err.(*os.PathError); ok {
@@ -35,7 +35,7 @@ func NewInplaceFileOutput() OutputFunc {
 	}
 }
 
-func NewFileOutput(filename string) OutputFunc {
+func NewFileOutput(filename string) types.OutputFunc {
 	return func(data []byte, metadata types.IOMetadata) error {
 		if err := os.WriteFile(filename, data, 0666); err != nil {
 			if pathErr, ok := err.(*os.PathError); ok {
@@ -53,7 +53,7 @@ func NewFileOutput(filename string) OutputFunc {
 	}
 }
 
-func NewStdOutput() OutputFunc {
+func NewStdOutput() types.OutputFunc {
 	return func(data []byte, metadata types.IOMetadata) error {
 		fmt.Printf("%s\n", data)
 		return nil

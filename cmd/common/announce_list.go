@@ -48,7 +48,7 @@ func newAnnounceListAppendTrackerCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 
 	return cmd
 }
@@ -106,7 +106,7 @@ func newAnnounceListClearCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 
 	return cmd
 }
@@ -145,7 +145,7 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 	setupDefaultCommand(cmd)
 
 	addInputFlags(cmd)
-	addOutputFlags(cmd)
+	addFileOutputFlags(cmd)
 
 	return cmd
 }
@@ -178,7 +178,9 @@ func newAnnounceListGetCommand() *cobra.Command {
 	}
 
 	setupDefaultCommand(cmd)
+
 	addInputFlags(cmd)
+	addDataOutputFlags(cmd)
 
 	return cmd
 }
@@ -214,7 +216,9 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 	}
 
 	setupDefaultCommand(cmd)
+
 	addInputFlags(cmd)
+	addDataOutputFlags(cmd)
 
 	return cmd
 }

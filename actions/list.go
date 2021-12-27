@@ -9,7 +9,7 @@ import (
 	"github.com/rakshasa/rbedit/types"
 )
 
-func NewAppendFromListOfBatchResultsAction(output outputs.Output, indexString string, actionsFn ...ActionFunc) types.InputResultFunc {
+func NewAppendFromListOfBatchResultsAction(output types.Output, indexString string, actionsFn ...ActionFunc) types.InputResultFunc {
 	batch := NewBatch()
 
 	for _, fn := range actionsFn {
@@ -41,12 +41,12 @@ func NewAppendFromListOfBatchResultsAction(output outputs.Output, indexString st
 }
 
 func NewAppendFromListOfBatchResults(indexString string, actionsFn ...ActionFunc) ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewAppendFromListOfBatchResultsAction(output, indexString, actionsFn...)
 	}
 }
 
-func NewReplaceIndexWithBatchResultAction(output outputs.Output, indexString string, actionsFn ...ActionFunc) types.InputResultFunc {
+func NewReplaceIndexWithBatchResultAction(output types.Output, indexString string, actionsFn ...ActionFunc) types.InputResultFunc {
 	batch := NewBatch()
 
 	for _, fn := range actionsFn {
@@ -81,7 +81,7 @@ func NewReplaceIndexWithBatchResultAction(output outputs.Output, indexString str
 }
 
 func NewReplaceIndexWithBatchResult(indexString string, actionsFn ...ActionFunc) ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewReplaceIndexWithBatchResultAction(output, indexString, actionsFn...)
 	}
 }

@@ -14,9 +14,10 @@ rbedit announce-list get-category [OPTIONS] INDEX
 ### Options
 
 ```
-      --batch          Input as batch of filenames
-  -h, --help           help for get-category
-  -i, --input string   Input source
+      --batch           Input as batch of filenames
+  -h, --help            help for get-category
+  -i, --input string    Input source
+  -o, --output string   Output destination
 ```
 
 ### SEE ALSO

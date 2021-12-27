@@ -18,7 +18,7 @@ rbedit announce-list clear-category
   -h, --help            help for clear-category
       --inplace         Output to source file, replacing it
   -i, --input string    Input source
-  -o, --output string   Output to file
+  -o, --output string   Output destination
 ```
 
 ### SEE ALSO

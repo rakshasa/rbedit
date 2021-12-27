@@ -42,6 +42,65 @@ Get value of the `length` entry in the `info` map.
 Write a custom bencoded object to `foo-info` entry in the torrent root.
 
 
+Batch Operations
+----------------
+
+Generate 10,000 torrents with unique info hashes:
+
+```bash
+$ RBEDIT_PATH=./build/rbedit-darwin-amd64 COUNT=10000 ./scripts/generate-torrents.sh /tmp/slackware-14.2-install-d1.torrent /tmp/slackware-torrents
+Generating torrent test files
+
+RBEDIT_PATH: ./build/rbedit
+COUNT: 10000
+SRC-TORRENT: /tmp/slackware-14.2-install-d1.torrent
+DEST-DIR: /tmp/slackware-torrents
+PREFIX-DEPTH: 1
+
+generating..................................
+
+Finished generating 10000 torrents
+
+$ find /tmp/slackware-torrents -type f | wc -l
+   10000
+
+# du -h -d0 /tmp/slackware-torrents
+273M    /Users/rakshasa/tmp/slackware-torrents/
+```
+
+Check the announce url of all 10,000 torrents:
+
+```bash
+$ time ./build/rbedit-darwin-amd64 announce get --input <(find /tmp/torrents -type f) --batch | tail -n3
+http://trackers.transamrit.net:8082/announce
+http://trackers.transamrit.net:8082/announce
+http://trackers.transamrit.net:8082/announce
+
+real    0m0.523s
+user    0m0.375s
+sys	    0m0.374s
+```
+
+Replace the announce urls and overwrite the source files for all 10,000 torrents:
+
+```bash
+$ time ./build/rbedit-darwin-amd64 announce put --input <(find /tmp/torrents -type f) --batch --inplace http://new.example.com/announce
+
+real    0m2.672s
+user    0m0.841s
+sys     0m1.858s
+```
+
+Verify the announce urls were changed:
+
+```bash
+$ ./build/rbedit-darwin-amd64 announce get --input <(find /tmp/torrents -type f) --batch | tail -n3
+http://new.example.com/announce
+http://new.example.com/announce
+http://new.example.com/announce
+```
+
+
 Donate to rTorrent development
 ------------------------------
 

@@ -8,7 +8,7 @@ import (
 	"github.com/rakshasa/rbedit/types"
 )
 
-func NewVerifyResultIsURIAction(output outputs.Output) types.InputResultFunc {
+func NewVerifyResultIsURIAction(output types.Output) types.InputResultFunc {
 	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsAbsoluteURI(result); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
@@ -22,12 +22,12 @@ func NewVerifyResultIsURIAction(output outputs.Output) types.InputResultFunc {
 }
 
 func NewVerifyResultIsURI() ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewVerifyResultIsURIAction(output)
 	}
 }
 
-func NewVerifyValueIsURIAction(output outputs.Output) types.InputResultFunc {
+func NewVerifyValueIsURIAction(output types.Output) types.InputResultFunc {
 	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsAbsoluteURI(metadata.Value); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
@@ -41,12 +41,12 @@ func NewVerifyValueIsURIAction(output outputs.Output) types.InputResultFunc {
 }
 
 func NewVerifyValueIsURI() ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewVerifyValueIsURIAction(output)
 	}
 }
 
-func NewVerifyResultIsListAction(output outputs.Output) types.InputResultFunc {
+func NewVerifyResultIsListAction(output types.Output) types.InputResultFunc {
 	return func(result interface{}, metadata types.IOMetadata) error {
 		if _, ok := objects.AsList(result); !ok {
 			return fmt.Errorf("could not verify: not a list")
@@ -60,12 +60,12 @@ func NewVerifyResultIsListAction(output outputs.Output) types.InputResultFunc {
 }
 
 func NewVerifyResultIsList() ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewVerifyResultIsListAction(output)
 	}
 }
 
-func NewVerifyResultIsListContentAction(output outputs.Output, verifyFn ActionFunc) types.InputResultFunc {
+func NewVerifyResultIsListContentAction(output types.Output, verifyFn ActionFunc) types.InputResultFunc {
 	return func(result interface{}, metadata types.IOMetadata) error {
 		objectList, ok := objects.AsList(result)
 		if !ok {
@@ -87,7 +87,7 @@ func NewVerifyResultIsListContentAction(output outputs.Output, verifyFn ActionFu
 }
 
 func NewVerifyResultIsListContent(verifyFn ActionFunc) ActionFunc {
-	return func(output outputs.Output) types.InputResultFunc {
+	return func(output types.Output) types.InputResultFunc {
 		return NewVerifyResultIsListContentAction(output, verifyFn)
 	}
 }

@@ -14,9 +14,10 @@ rbedit announce get [OPTIONS]
 ### Options
 
 ```
-      --batch          Input as batch of filenames
-  -h, --help           help for get
-  -i, --input string   Input source
+      --batch           Input as batch of filenames
+  -h, --help            help for get
+  -i, --input string    Input source
+  -o, --output string   Output destination
 ```
 
 ### SEE ALSO
