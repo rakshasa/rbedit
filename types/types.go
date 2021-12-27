@@ -18,4 +18,10 @@ type ResultTarget int
 const (
 	ObjectResultTarget ResultTarget = iota
 	MetadataResultTarget
+
+	BatchInputTypeName = "batch"
+	FileInputTypeName  = "file"
+
+	FileOutputTypeName    = "file"
+	InplaceOutputTypeName = "inplace"
 )

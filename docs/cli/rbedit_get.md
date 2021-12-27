@@ -14,8 +14,9 @@ rbedit get [OPTIONS] [KEY-PATH]...
 ### Options
 
 ```
+      --batch          Input as batch of filenames
   -h, --help           help for get
-  -i, --input string   Input a file by path
+  -i, --input string   Input source
 ```
 
 ### SEE ALSO

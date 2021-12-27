@@ -14,10 +14,11 @@ rbedit announce-list append-tracker [OPTIONS] INDEX URL...
 ### Options
 
 ```
+      --batch           Input as batch of filenames
   -h, --help            help for append-tracker
-      --inplace         Replace input file with output
-  -i, --input string    Input a file by path
-      --output string   Output to file
+      --inplace         Output to source file, replacing it
+  -i, --input string    Input source
+  -o, --output string   Output to file
 ```
 
 ### SEE ALSO

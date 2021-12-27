@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/rakshasa/bencode-go"
@@ -10,30 +11,33 @@ import (
 )
 
 const (
+	inputFlagName         = "input"
+	inputBatchFlagName    = "batch"
+	outputInplaceFlagName = "inplace"
+	outputFlagName        = "output"
+
 	bencodeValueFlagName = "bencode"
 	integerValueFlagName = "int"
-	inplaceFlagName      = "inplace"
-	inputFlagName        = "input"
 	jsonValueFlagName    = "json"
-	outputFlagName       = "output"
 	stringValueFlagName  = "string"
 )
 
 // Add command flags:
 
 func addInputFlags(cmd *cobra.Command) {
-	cmd.Flags().StringP(inputFlagName, "i", "", "Input a file by path")
+	cmd.Flags().VarP(&nonEmptyString{}, inputFlagName, "i", "Input source")
+	cmd.Flags().Bool(inputBatchFlagName, false, "Input as batch of filenames")
 }
 
 func addOutputFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(inplaceFlagName, false, "Replace input file with output")
-	cmd.Flags().String(outputFlagName, "", "Output to file")
+	cmd.Flags().Bool(outputInplaceFlagName, false, "Output to source file, replacing it")
+	cmd.Flags().VarP(&nonEmptyString{}, outputFlagName, "o", "Output to file")
 }
 
 func addAnyValueFlags(cmd *cobra.Command) {
-	cmd.Flags().String(bencodeValueFlagName, "", "Bencoded value")
+	cmd.Flags().Var(&nonEmptyString{}, bencodeValueFlagName, "Bencoded value")
 	cmd.Flags().Int64(integerValueFlagName, 0, "Integer value")
-	cmd.Flags().String(jsonValueFlagName, "", "JSON value")
+	cmd.Flags().Var(&nonEmptyString{}, jsonValueFlagName, "JSON value")
 	cmd.Flags().String(stringValueFlagName, "", "String value")
 }
 
@@ -99,4 +103,30 @@ func getStringValueFromFlag(flags *flag.FlagSet, name string) (interface{}, bool
 	}
 
 	return value, true, nil
+}
+
+// Flag types:
+
+type nonEmptyString struct {
+	value string
+}
+
+func (v *nonEmptyString) String() string {
+	return string(v.value)
+}
+
+func (v *nonEmptyString) Set(s string) error {
+	if len(v.value) != 0 {
+		return fmt.Errorf("duplicate flags")
+	}
+	if len(s) == 0 {
+		return fmt.Errorf("empty string")
+	}
+
+	*v = nonEmptyString{value: s}
+	return nil
+}
+
+func (v *nonEmptyString) Type() string {
+	return "string"
 }

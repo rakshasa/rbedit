@@ -41,6 +41,7 @@ func setupDefaultCommand(cmd *cobra.Command) {
 	cmd.DisableAutoGenTag = true
 	cmd.DisableFlagsInUseLine = true
 	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
 	cmd.TraverseChildren = true
 
 	cmd.SetUsageTemplate(defaultUsageTemplate)

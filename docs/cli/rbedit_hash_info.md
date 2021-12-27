@@ -14,8 +14,9 @@ rbedit hash info [OPTIONS]
 ### Options
 
 ```
+      --batch          Input as batch of filenames
   -h, --help           help for info
-  -i, --input string   Input a file by path
+  -i, --input string   Input source
 ```
 
 ### SEE ALSO

@@ -14,13 +14,14 @@ rbedit put [OPTIONS] KEY-PATH...
 ### Options
 
 ```
+      --batch            Input as batch of filenames
       --bencode string   Bencoded value
   -h, --help             help for put
-      --inplace          Replace input file with output
-  -i, --input string     Input a file by path
+      --inplace          Output to source file, replacing it
+  -i, --input string     Input source
       --int int          Integer value
       --json string      JSON value
-      --output string    Output to file
+  -o, --output string    Output to file
       --string string    String value
 ```
 

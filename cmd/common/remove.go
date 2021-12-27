@@ -29,15 +29,13 @@ func removeCmdRun(cmd *cobra.Command, args []string) {
 		printCommandUsageAndExit(cmd)
 	}
 
-	metadata, output, err := metadataFromCommand(cmd,
-		WithInput(),
+	metadata, input, output, err := metadataFromCommand(cmd,
+		WithDefaultInput(inputs.NewDecodeBencode()),
 		WithDefaultOutput(outputs.NewEncodeBencode(), nil),
 	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
 	}
-
-	input := inputs.NewSingleInput(inputs.NewDecodeBencode(), inputs.NewFileInput())
 
 	if err := input.Execute(metadata, actions.NewRemoveAction(output, args)); err != nil {
 		printCommandErrorAndExit(cmd, err)
