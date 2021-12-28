@@ -8,11 +8,14 @@ Quick Start
 -----------
 
 ```bash
-# Compile for linux arch:
+# Compile for linux or darwin arch:
 ./scripts/build.sh
 
 # Compile for darwin arch:
 RBEDIT_ARCH=darwin ./scripts/build.sh
+
+# Compile for linux arch:
+RBEDIT_ARCH=linux ./scripts/build.sh
 ```
 
 The only build requirement is Docker and the binary has no runtime dependencies.
