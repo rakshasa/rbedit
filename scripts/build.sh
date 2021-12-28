@@ -2,11 +2,33 @@
 
 set -eux
 
-TARGET_OS="${TARGET_OS:-linux}"
-TARGET_ARCH="${TARGET_ARCH:-amd64}"
 BUILD_IMAGE="${BUILD_IMAGE:-build-env}"
 BUILD_MARKDOWN="${BUILD_MARKDOWN:-no}"
 BUILD_DOCS="${BUILD_DOCS:-no}"
+BUILD_DIR="${BUILD_DIR:-./build}"
+
+TARGET_OS="${TARGET_OS:-}"
+TARGET_ARCH="${TARGET_ARCH:-amd64}"
+
+case "${TARGET_OS:-}" in
+  darwin|linux)
+    echo "TARGET_OS=${TARGET_OS}"
+    ;;
+  "")
+    if [[ ${OSTYPE} =~ ^darwin ]]; then
+      TARGET_OS=darwin
+    elif [[ ${OSTYPE} =~ ^linux-gnu ]]; then
+      TARGET_OS=linux
+    else
+      echo "could not detect a valid taret OS"
+      exit 1
+    fi
+    ;;
+  *)
+    echo "unknown target OS: ${TARGET_OS}"
+    exit 1
+    ;;
+esac
 
 if [[ "${BUILD_DOCS}" == "yes" ]]; then
   BUILD_MARKDOWN="yes"
@@ -93,23 +115,23 @@ build_dir=$(mktemp -d); readonly build_dir
     --name "${container}" \
     "${rbedit_image}"
 
-  mkdir -p ./build/
-  docker cp "${container}:/rbedit-${TARGET_OS}-${TARGET_ARCH}" ./build/
+  mkdir -p "${BUILD_DIR}/"
+  docker cp "${container}:/rbedit-${TARGET_OS}-${TARGET_ARCH}" "${BUILD_DIR}/"
 
   if [[ "${BUILD_MARKDOWN}" == "yes" ]]; then
-    docker cp "${container}:/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./build/
+    docker cp "${container}:/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" "${BUILD_DIR}/"
   fi
 
   if [[ "${BUILD_DOCS}" == "yes" ]]; then
-    if ! "./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" &> /dev/null; then
-      echo "could not run ./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}"
+    if ! "${BUILD_DIR}/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" &> /dev/null; then
+      echo "could not run ${BUILD_DIR}/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}"
       exit 1
     fi
 
     rm -rf ./docs/cli
     mkdir -p ./docs/cli
 
-    "./build/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./docs/cli
+    "${BUILD_DIR}/rbedit-markdown-${TARGET_OS}-${TARGET_ARCH}" ./docs/cli
 
     git add ./docs/cli
   fi

@@ -78,7 +78,7 @@ http://trackers.transamrit.net:8082/announce
 
 real    0m0.523s
 user    0m0.375s
-sys	    0m0.374s
+sys     0m0.374s
 ```
 
 Replace the announce urls and overwrite the source files for all 10,000 torrents:
