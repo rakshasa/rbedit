@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
@@ -67,8 +66,8 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 	}
 
 	metadata, input, output, err := metadataFromCommand(cmd,
-		WithDefaultInput(inputs.NewDecodeBencode()),
-		WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+		WithDefaultInput(),
+		WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
 	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
@@ -89,8 +88,8 @@ func newAnnounceListClearCommand() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
-				WithDefaultInput(inputs.NewDecodeBencode()),
-				WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+				WithDefaultInput(),
+				WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -121,8 +120,8 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
-				WithDefaultInput(inputs.NewDecodeBencode()),
-				WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+				WithDefaultInput(),
+				WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -160,7 +159,7 @@ func newAnnounceListGetCommand() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
-				WithDefaultInput(inputs.NewDecodeBencode()),
+				WithDefaultInput(),
 				WithDefaultOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput()),
 			)
 			if err != nil {
@@ -196,7 +195,7 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
-				WithDefaultInput(inputs.NewDecodeBencode()),
+				WithDefaultInput(),
 				WithDefaultOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput()),
 			)
 			if err != nil {

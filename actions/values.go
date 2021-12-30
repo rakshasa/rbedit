@@ -5,8 +5,8 @@ import (
 )
 
 func NewListValueAction(output types.Output, value []interface{}) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
-		if err := output.Execute(value, metadata); err != nil {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
+		if err := output.Execute(metadata, value); err != nil {
 			return err
 		}
 
@@ -21,8 +21,8 @@ func NewListValue(value []interface{}) ActionFunc {
 }
 
 func NewStringValueAction(output types.Output, value string) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
-		if err := output.Execute(value, metadata); err != nil {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
+		if err := output.Execute(metadata, value); err != nil {
 			return err
 		}
 

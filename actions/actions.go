@@ -10,12 +10,12 @@ import (
 )
 
 func NewGetObjectAction(output types.Output, keys []string) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
 		obj, err := objects.LookupKeyPath(rootObj, keys)
 		if err != nil {
 			return err
 		}
-		if err := output.Execute(obj, metadata); err != nil {
+		if err := output.Execute(metadata, obj); err != nil {
 			return err
 		}
 
@@ -30,7 +30,7 @@ func NewGetObject(keys []string) ActionFunc {
 }
 
 func NewGetListIndexAction(output types.Output, indexString string) types.InputResultFunc {
-	return func(object interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, object interface{}) error {
 		idx, err := strconv.Atoi(indexString)
 		if err != nil || idx < 0 {
 			return fmt.Errorf("not a valid list index")
@@ -43,7 +43,7 @@ func NewGetListIndexAction(output types.Output, indexString string) types.InputR
 		if idx >= len(listObject) {
 			return fmt.Errorf("out-of-bounds")
 		}
-		if err := output.Execute(listObject[idx], metadata); err != nil {
+		if err := output.Execute(metadata, listObject[idx]); err != nil {
 			return types.PrependKeyStringIfKeysError(err, indexString)
 		}
 
@@ -58,7 +58,7 @@ func NewGetListIndex(indexString string) ActionFunc {
 }
 
 func NewGetAnnounceListAppendTrackerAction(output types.Output, categoryIdx int, trackers []string) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
 		obj, err := objects.LookupKeyPath(rootObj, []string{"announce-list"})
 		if err != nil {
 			return err
@@ -80,7 +80,7 @@ func NewGetAnnounceListAppendTrackerAction(output types.Output, categoryIdx int,
 		if err != nil {
 			return err
 		}
-		if err := output.Execute(rootObj, metadata); err != nil {
+		if err := output.Execute(metadata, rootObj); err != nil {
 			return err
 		}
 
@@ -89,12 +89,12 @@ func NewGetAnnounceListAppendTrackerAction(output types.Output, categoryIdx int,
 }
 
 func NewPutAction(output types.Output, keys []string) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
 		rootObj, err := objects.SetObject(rootObj, metadata.Value, keys)
 		if err != nil {
 			return err
 		}
-		if err := output.Execute(rootObj, metadata); err != nil {
+		if err := output.Execute(metadata, rootObj); err != nil {
 			return err
 		}
 
@@ -109,12 +109,12 @@ func NewPut(keys []string) ActionFunc {
 }
 
 func NewRemoveAction(output types.Output, keys []string) types.InputResultFunc {
-	return func(rootObject interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObject interface{}) error {
 		rootObject, err := objects.RemoveObject(rootObject, keys)
 		if err != nil {
 			return err
 		}
-		if err := output.Execute(rootObject, metadata); err != nil {
+		if err := output.Execute(metadata, rootObject); err != nil {
 			return err
 		}
 
@@ -129,9 +129,9 @@ func NewReplaceWithBatchResultAction(output types.Output, keys []string, actions
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObject interface{}) error {
 		resultOutput := outputs.NewResultOutput()
-		if err := batch.CreateFunction(resultOutput)(rootObject, metadata); err != nil {
+		if err := batch.CreateFunction(resultOutput)(metadata, rootObject); err != nil {
 			return err
 		}
 
@@ -139,7 +139,7 @@ func NewReplaceWithBatchResultAction(output types.Output, keys []string, actions
 		if err != nil {
 			return err
 		}
-		if err := output.Execute(rootObject, metadata); err != nil {
+		if err := output.Execute(metadata, rootObject); err != nil {
 			return err
 		}
 

@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +48,7 @@ func newAnnounceGetCommand() *cobra.Command {
 
 func announceGetCmdRun(cmd *cobra.Command, args []string) {
 	metadata, input, output, err := metadataFromCommand(cmd,
-		WithDefaultInput(inputs.NewDecodeBencode()),
+		WithDefaultInput(),
 		WithDefaultOutput(outputs.NewEncodePrint(), outputs.NewStdOutput()),
 	)
 	if err != nil {
@@ -85,8 +84,8 @@ func newAnnouncePutCommand() *cobra.Command {
 
 func announcePutCmdRun(cmd *cobra.Command, args []string) {
 	metadata, input, output, err := metadataFromCommand(cmd,
-		WithDefaultInput(inputs.NewDecodeBencode()),
-		WithDefaultOutput(outputs.NewEncodeBencode(), nil),
+		WithDefaultInput(),
+		WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
 	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)

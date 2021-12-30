@@ -23,7 +23,7 @@ func (b *batch) Append(actionFn ActionFunc) {
 
 func (b *batch) CreateFunction(output types.Output) types.InputResultFunc {
 	if len(b.actions) == 0 {
-		return func(rootObj interface{}, metadata types.IOMetadata) error {
+		return func(metadata types.IOMetadata, rootObj interface{}) error {
 			return nil
 		}
 	}
@@ -31,8 +31,8 @@ func (b *batch) CreateFunction(output types.Output) types.InputResultFunc {
 	for idx := len(b.actions) - 1; idx != 0; idx-- {
 		action := b.actions[idx](output)
 
-		output = outputs.NewChainOutput(func(object interface{}, metadata types.IOMetadata) error {
-			return action(object, metadata)
+		output = outputs.NewChainOutput(func(metadata types.IOMetadata, object interface{}) error {
+			return action(metadata, object)
 		})
 	}
 

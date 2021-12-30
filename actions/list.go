@@ -16,14 +16,14 @@ func NewAppendFromListOfBatchResultsAction(output types.Output, indexString stri
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObject interface{}) error {
 		rootList, ok := objects.AsList(rootObject)
 		if !ok {
 			return fmt.Errorf("not a list object")
 		}
 
 		resultOutput := outputs.NewResultOutput()
-		if err := batch.CreateFunction(resultOutput)(rootList, metadata); err != nil {
+		if err := batch.CreateFunction(resultOutput)(metadata, rootList); err != nil {
 			return err
 		}
 		resultList, ok := objects.AsList(resultOutput)
@@ -32,7 +32,7 @@ func NewAppendFromListOfBatchResultsAction(output types.Output, indexString stri
 		}
 
 		rootList = append(rootList, resultList...)
-		if err := output.Execute(rootList, metadata); err != nil {
+		if err := output.Execute(metadata, rootList); err != nil {
 			return err
 		}
 
@@ -53,7 +53,7 @@ func NewReplaceIndexWithBatchResultAction(output types.Output, indexString strin
 		batch.Append(fn)
 	}
 
-	return func(rootObject interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObject interface{}) error {
 		idx, err := strconv.Atoi(indexString)
 		if err != nil || idx < 0 {
 			return fmt.Errorf("not a valid list index")
@@ -67,12 +67,12 @@ func NewReplaceIndexWithBatchResultAction(output types.Output, indexString strin
 			return fmt.Errorf("out-of-bounds")
 		}
 		resultOutput := outputs.NewResultOutput()
-		if err := batch.CreateFunction(resultOutput)(rootList, metadata); err != nil {
+		if err := batch.CreateFunction(resultOutput)(metadata, rootList); err != nil {
 			return err
 		}
 
 		rootList[idx] = resultOutput.ResultObject()
-		if err := output.Execute(rootList, metadata); err != nil {
+		if err := output.Execute(metadata, rootList); err != nil {
 			return err
 		}
 

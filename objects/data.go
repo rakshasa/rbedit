@@ -7,33 +7,65 @@ import (
 )
 
 // Add float and uinteger:
-func AsInteger(obj interface{}) (int64, bool) {
+func AsInteger(obj interface{}, args ...bool) (int64, bool) {
+	if len(args) != 0 && !args[0] {
+		return 0, false
+	}
+
 	d, ok := obj.(int64)
 	return d, ok
 }
 
-func AsList(obj interface{}) ([]interface{}, bool) {
+func AsList(obj interface{}, args ...bool) ([]interface{}, bool) {
+	if len(args) != 0 && !args[0] {
+		return nil, false
+	}
+
 	l, ok := obj.([]interface{})
 	return l, ok
 }
 
-func AsMap(obj interface{}) (map[string]interface{}, bool) {
+func AsMap(obj interface{}, args ...bool) (map[string]interface{}, bool) {
+	if len(args) != 0 && !args[0] {
+		return nil, false
+	}
+
 	m, ok := obj.(map[string]interface{})
 	return m, ok
 }
 
-func AsString(obj interface{}) (string, bool) {
+func AsString(obj interface{}, args ...bool) (string, bool) {
+	if len(args) != 0 && !args[0] {
+		return "", false
+	}
+
 	s, ok := obj.(string)
 	return s, ok
 }
 
-func AsAbsoluteURI(obj interface{}) (string, bool) {
+func AsAbsoluteURI(obj interface{}, args ...bool) (string, bool) {
+	if len(args) != 0 && !args[0] {
+		return "", false
+	}
+
 	s, ok := obj.(string)
 	if !ok || !types.VerifyAbsoluteURI(s) {
 		return "", false
 	}
 
 	return s, true
+}
+
+// func LookupKey(obj interface{}, key string) (map[string]interface{}, bool) {
+func LookupKey(obj interface{}, key string) (interface{}, bool) {
+	m, ok := obj.(map[string]interface{})
+	if !ok {
+		// return map[string]interface{}, false
+		return nil, false
+	}
+
+	v, ok := m[key]
+	return v, ok
 }
 
 func CopyObject(src interface{}) (interface{}, error) {

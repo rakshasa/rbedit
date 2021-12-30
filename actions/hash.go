@@ -10,7 +10,7 @@ import (
 )
 
 func NewSHA1Action(output types.Output, keys []string, target types.ResultTarget) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
 		object, err := objects.LookupKeyPath(rootObj, keys)
 		if err != nil {
 			return err
@@ -32,7 +32,7 @@ func NewSHA1Action(output types.Output, keys []string, target types.ResultTarget
 			return fmt.Errorf("unknown output target type")
 		}
 
-		if err := output.Execute(result, metadata); err != nil {
+		if err := output.Execute(metadata, result); err != nil {
 			return err
 		}
 
@@ -51,12 +51,12 @@ func NewCalculateInfoHash() ActionFunc {
 }
 
 func NewCachedInfoHashAction(output types.Output) types.InputResultFunc {
-	return func(rootObj interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, rootObj interface{}) error {
 		if len(metadata.InfoHash) == 0 {
 			return fmt.Errorf("info hash not calculated")
 		}
 
-		if err := output.Execute(metadata.InfoHash, metadata); err != nil {
+		if err := output.Execute(metadata, metadata.InfoHash); err != nil {
 			return err
 		}
 

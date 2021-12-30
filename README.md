@@ -8,7 +8,7 @@ Quick Start
 -----------
 
 ```bash
-# Compile for linux or darwin arch:
+# Compile:
 ./scripts/build.sh
 
 # Compile for darwin arch:

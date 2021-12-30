@@ -9,11 +9,11 @@ import (
 )
 
 func NewVerifyResultIsURIAction(output types.Output) types.InputResultFunc {
-	return func(result interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, result interface{}) error {
 		if _, ok := objects.AsAbsoluteURI(result); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
 		}
-		if err := output.Execute(result, metadata); err != nil {
+		if err := output.Execute(metadata, result); err != nil {
 			return err
 		}
 
@@ -28,11 +28,11 @@ func NewVerifyResultIsURI() ActionFunc {
 }
 
 func NewVerifyValueIsURIAction(output types.Output) types.InputResultFunc {
-	return func(result interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, result interface{}) error {
 		if _, ok := objects.AsAbsoluteURI(metadata.Value); !ok {
 			return fmt.Errorf("not a valid absolute path URI")
 		}
-		if err := output.Execute(result, metadata); err != nil {
+		if err := output.Execute(metadata, result); err != nil {
 			return err
 		}
 
@@ -47,11 +47,11 @@ func NewVerifyValueIsURI() ActionFunc {
 }
 
 func NewVerifyResultIsListAction(output types.Output) types.InputResultFunc {
-	return func(result interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, result interface{}) error {
 		if _, ok := objects.AsList(result); !ok {
 			return fmt.Errorf("could not verify: not a list")
 		}
-		if err := output.Execute(result, metadata); err != nil {
+		if err := output.Execute(metadata, result); err != nil {
 			return err
 		}
 
@@ -66,19 +66,19 @@ func NewVerifyResultIsList() ActionFunc {
 }
 
 func NewVerifyResultIsListContentAction(output types.Output, verifyFn ActionFunc) types.InputResultFunc {
-	return func(result interface{}, metadata types.IOMetadata) error {
+	return func(metadata types.IOMetadata, result interface{}) error {
 		objectList, ok := objects.AsList(result)
 		if !ok {
 			return fmt.Errorf("could not verify list content: not a list")
 		}
 
 		for _, childObj := range objectList {
-			if err := verifyFn(outputs.NewEmptyOutput())(childObj, metadata); err != nil {
+			if err := verifyFn(outputs.NewEmptyOutput())(metadata, childObj); err != nil {
 				return err
 			}
 		}
 
-		if err := output.Execute(result, metadata); err != nil {
+		if err := output.Execute(metadata, result); err != nil {
 			return err
 		}
 

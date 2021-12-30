@@ -21,13 +21,13 @@ func NewSingleOutput(encodeFn types.EncodeFunc, outputFn types.OutputFunc) *sing
 	}
 }
 
-func (o *singleOutput) Execute(object interface{}, metadata types.IOMetadata) error {
-	data, err := o.encodeFn(object)
+func (o *singleOutput) Execute(metadata types.IOMetadata, object interface{}) error {
+	metadata, data, err := o.encodeFn(metadata, object)
 	if err != nil {
 		return err
 	}
 
-	if err := o.outputFn(data, metadata); err != nil {
+	if err := o.outputFn(metadata, data); err != nil {
 		return err
 	}
 
@@ -35,6 +35,37 @@ func (o *singleOutput) Execute(object interface{}, metadata types.IOMetadata) er
 }
 
 func (o *singleOutput) ResultObject() interface{} {
+	return nil
+}
+
+// TorrentOutput:
+
+type torrentOutput struct {
+	encodeFn types.EncodeFunc
+	outputFn types.OutputFunc
+}
+
+func NewTorrentOutput(encodeFn types.EncodeFunc, outputFn types.OutputFunc) *torrentOutput {
+	return &torrentOutput{
+		encodeFn: encodeFn,
+		outputFn: outputFn,
+	}
+}
+
+func (o *torrentOutput) Execute(metadata types.IOMetadata, object interface{}) error {
+	metadata, data, err := o.encodeFn(metadata, object)
+	if err != nil {
+		return err
+	}
+
+	if err := o.outputFn(metadata, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *torrentOutput) ResultObject() interface{} {
 	return nil
 }
 
@@ -50,8 +81,8 @@ func NewChainOutput(chainFn types.InputResultFunc) *chainOutput {
 	}
 }
 
-func (o *chainOutput) Execute(object interface{}, metadata types.IOMetadata) error {
-	return o.chainFn(object, metadata)
+func (o *chainOutput) Execute(metadata types.IOMetadata, object interface{}) error {
+	return o.chainFn(metadata, object)
 }
 
 func (o *chainOutput) ResultObject() interface{} {
@@ -67,7 +98,7 @@ func NewEmptyOutput() *emptyOutput {
 	return &emptyOutput{}
 }
 
-func (o *emptyOutput) Execute(object interface{}, metadata types.IOMetadata) error {
+func (o *emptyOutput) Execute(metadata types.IOMetadata, object interface{}) error {
 	return nil
 }
 
@@ -85,7 +116,7 @@ func NewResultOutput() *resultOutput {
 	return &resultOutput{}
 }
 
-func (o *resultOutput) Execute(object interface{}, metadata types.IOMetadata) error {
+func (o *resultOutput) Execute(metadata types.IOMetadata, object interface{}) error {
 	result, err := objects.CopyObject(object)
 	if err != nil {
 		return fmt.Errorf("failed to copy output result object: %v", err)

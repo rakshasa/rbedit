@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/rakshasa/bencode-go"
@@ -11,10 +12,12 @@ import (
 )
 
 const (
-	inputFlagName         = "input"
-	inputBatchFlagName    = "batch"
-	outputInplaceFlagName = "inplace"
-	outputFlagName        = "output"
+	inputFlagName           = "input"
+	inputBatchFlagName      = "batch"
+	inputNotTorrentFlagName = "not-torrent"
+	outputFlagName          = "output"
+	outputInplaceFlagName   = "inplace"
+	outputTemplateFlagName  = "output-template"
 
 	bencodeValueFlagName = "bencode"
 	integerValueFlagName = "int"
@@ -25,17 +28,19 @@ const (
 // Add command flags:
 
 func addInputFlags(cmd *cobra.Command) {
-	cmd.Flags().VarP(&nonEmptyString{}, inputFlagName, "i", "Input source")
+	cmd.Flags().VarP(&nonEmptyString{}, inputFlagName, "i", "Input filename")
 	cmd.Flags().Bool(inputBatchFlagName, false, "Input as batch of filenames")
+	cmd.Flags().Bool(inputNotTorrentFlagName, false, "Disable torrent verification on input")
 }
 
 func addDataOutputFlags(cmd *cobra.Command) {
-	cmd.Flags().VarP(&nonEmptyString{}, outputFlagName, "o", "Output destination")
+	cmd.Flags().VarP(&nonEmptyString{}, outputFlagName, "o", "Output to filename")
+	cmd.Flags().Var(&nonEmptyString{}, outputTemplateFlagName, "Output to template filename")
 }
 
 func addFileOutputFlags(cmd *cobra.Command) {
 	addDataOutputFlags(cmd)
-	cmd.Flags().Bool(outputInplaceFlagName, false, "Output to source file, replacing it")
+	cmd.Flags().Bool(outputInplaceFlagName, false, "Output to source filename, replacing it")
 }
 
 func addAnyValueFlags(cmd *cobra.Command) {
@@ -46,6 +51,42 @@ func addAnyValueFlags(cmd *cobra.Command) {
 }
 
 // Get value from flags:
+
+func hasChangedFlags(cmd *cobra.Command) bool {
+	var result bool
+
+	cmd.Flags().Visit(func(f *flag.Flag) {
+		result = true
+	})
+
+	return result
+}
+
+func getChangedString(flagSet *flag.FlagSet, flagName string) (string, bool) {
+	if !flagSet.Changed(flagName) {
+		return "", false
+	}
+
+	str, err := flagSet.GetString(flagName)
+	if err != nil {
+		log.Fatalf("getChangedString(flagSet, \"%s\") received unexpected error: %v", err)
+	}
+
+	return str, true
+}
+
+func getChangedTrue(flagSet *flag.FlagSet, flagName string) bool {
+	if !flagSet.Changed(flagName) {
+		return false
+	}
+
+	flag, err := flagSet.GetBool(flagName)
+	if err != nil {
+		log.Fatalf("getBoolString(flagSet, \"%s\") received unexpected error: %v", err)
+	}
+
+	return flag
+}
 
 func getBencodeValueFromFlag(flags *flag.FlagSet, name string) (interface{}, bool, error) {
 	if !flags.Changed(name) {

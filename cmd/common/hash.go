@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/inputs"
 	"github.com/rakshasa/rbedit/outputs"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +37,7 @@ func newHashInfoCommand() *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
-				WithDefaultInput(inputs.NewDecodeBencode()),
+				WithDefaultInput(),
 				WithDefaultOutput(outputs.NewEncodeAsHexString(), outputs.NewStdOutput()),
 			)
 			if err != nil {
@@ -59,6 +58,7 @@ func newHashInfoCommand() *cobra.Command {
 
 	setupDefaultCommand(cmd)
 	addInputFlags(cmd)
+	addDataOutputFlags(cmd)
 
 	return cmd
 }
