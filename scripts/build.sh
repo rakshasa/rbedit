@@ -11,7 +11,7 @@ TARGET_OS="${TARGET_OS:-}"
 TARGET_ARCH="${TARGET_ARCH:-amd64}"
 
 case "${TARGET_OS:-}" in
-  darwin|linux)
+  darwin|linux|windows)
     echo "TARGET_OS=${TARGET_OS}"
     ;;
   "")
@@ -20,7 +20,7 @@ case "${TARGET_OS:-}" in
     elif [[ ${OSTYPE} =~ ^linux-gnu ]]; then
       TARGET_OS=linux
     else
-      echo "could not detect a valid taret OS"
+      echo "could not detect a valid target OS"
       exit 1
     fi
     ;;

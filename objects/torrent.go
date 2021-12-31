@@ -3,6 +3,7 @@ package objects
 import (
 	"crypto/md5"
 	"fmt"
+	"sync"
 
 	bencode "github.com/rakshasa/bencode-go"
 	"github.com/rakshasa/rbedit/types"
@@ -43,9 +44,13 @@ func NewTorrentInfo(rootObject interface{}) (types.TorrentInfo, error) {
 		isStrictlyCompliant = false
 	}
 
+	var cachedLock sync.Mutex
 	var cachedMD5Hash *types.MD5Hash
 
 	hashFn := func() (types.MD5Hash, error) {
+		cachedLock.Lock()
+		defer cachedLock.Unlock()
+
 		if cachedMD5Hash == nil {
 			hasher := md5.New()
 			if err := bencode.Marshal(hasher, infoMap); err != nil {
@@ -62,9 +67,10 @@ func NewTorrentInfo(rootObject interface{}) (types.TorrentInfo, error) {
 		return *cachedMD5Hash, nil
 	}
 
-	return types.TorrentInfo{
-		Name:              name,
-		HashFn:            hashFn,
-		StrictlyCompliant: isStrictlyCompliant,
-	}, nil
+	torrentInfo, err := types.NewTorrentInfo(name, hashFn, isStrictlyCompliant)
+	if err != nil {
+		return types.TorrentInfo{}, nil
+	}
+
+	return *torrentInfo, nil
 }

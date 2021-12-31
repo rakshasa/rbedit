@@ -14,10 +14,12 @@ rbedit announce get [OPTIONS]
 ### Options
 
 ```
-      --batch           Input as batch of filenames
-  -h, --help            help for get
-  -i, --input string    Input source
-  -o, --output string   Output destination
+      --batch                    Input as batch of filenames
+  -h, --help                     help for get
+  -i, --input string             Input filename
+      --not-torrent              Disable torrent verification on input
+  -o, --output string            Output to filename
+      --output-template string   Output to template filename
 ```
 
 ### SEE ALSO

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rakshasa/rbedit/data/templates"
 	"github.com/rakshasa/rbedit/types"
 )
 
@@ -55,7 +56,7 @@ func NewFileOutput(filename string) types.OutputFunc {
 
 func NewFileOutputWithTemplateFilename(filenameTemplate string) types.OutputFunc {
 	return func(metadata types.IOMetadata, data []byte) error {
-		filename, err := metadata.ExecuteTemplate(filenameTemplate)
+		filename, err := templates.ExecuteTemplate(metadata, filenameTemplate)
 		if err != nil {
 			return &fileOutputError{
 				err:      fmt.Sprintf("invalid output filename %v", err),
@@ -80,7 +81,7 @@ func NewFileOutputWithTemplateFilename(filenameTemplate string) types.OutputFunc
 	}
 }
 
-func NewStdOutput() types.OutputFunc {
+func NewStandardOutput() types.OutputFunc {
 	return func(metadata types.IOMetadata, data []byte) error {
 		fmt.Printf("%s\n", data)
 		return nil

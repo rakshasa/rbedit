@@ -1,44 +1,33 @@
-package outputs
+package encodings
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"strings"
 
-	"github.com/rakshasa/bencode-go"
+	"github.com/rakshasa/rbedit/data/templates"
 	"github.com/rakshasa/rbedit/objects"
 	"github.com/rakshasa/rbedit/types"
 )
 
-func NewEncodeGenericBencode() types.EncodeFunc {
-	return func(metadata types.IOMetadata, object interface{}) (types.IOMetadata, []byte, error) {
-		var buf bytes.Buffer
-
-		if err := bencode.Marshal(&buf, object); err != nil {
-			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data: %v", err)
-		}
-
-		return metadata, buf.Bytes(), nil
+func SprintListOfStrings(obj interface{}) ([]string, error) {
+	l, ok := objects.AsList(obj)
+	if !ok {
+		return nil, fmt.Errorf("cannot print object: not a list")
 	}
-}
 
-func NewEncodeTorrentBencode() types.EncodeFunc {
-	return func(metadata types.IOMetadata, object interface{}) (types.IOMetadata, []byte, error) {
-		torrentInfo, err := objects.NewTorrentInfo(object)
-		if err != nil {
-			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data to bencoded torrent, not a valid torrent: %v", err)
-		}
-		metadata.OutputTorrentInfo = &torrentInfo
+	var strs []string
 
-		var buf bytes.Buffer
-
-		if err := bencode.Marshal(&buf, object); err != nil {
-			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data to bencoded torrent: %v", err)
+	for _, obj := range l {
+		s, ok := objects.AsString(obj)
+		if !ok {
+			return nil, fmt.Errorf("cannot print object: not a string")
 		}
 
-		return metadata, buf.Bytes(), nil
+		strs = append(strs, s)
 	}
+
+	return strs, nil
 }
 
 func NewEncodePrint() types.EncodeFunc {
@@ -94,5 +83,16 @@ func NewEncodeAsHexString() types.EncodeFunc {
 		}
 
 		return metadata, []byte(hex.EncodeToString([]byte(str))), nil
+	}
+}
+
+func NewEncodePrintTemplate(templateText string) types.EncodeFunc {
+	return func(metadata types.IOMetadata, object interface{}) (types.IOMetadata, []byte, error) {
+		data, err := templates.ExecuteTemplate(metadata, templateText)
+		if err != nil {
+			return types.IOMetadata{}, nil, fmt.Errorf("could not print template: %v", err)
+		}
+
+		return metadata, []byte(data), nil
 	}
 }

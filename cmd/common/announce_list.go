@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/data/encodings"
+	"github.com/rakshasa/rbedit/data/outputs"
 	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
 )
@@ -67,7 +68,7 @@ func announceListAppendTrackerCmdRun(cmd *cobra.Command, args []string) {
 
 	metadata, input, output, err := metadataFromCommand(cmd,
 		WithDefaultInput(),
-		WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
+		WithDefaultOutput(encodings.NewEncodeTorrentBencode(), nil),
 	)
 	if err != nil {
 		printCommandErrorAndExit(cmd, err)
@@ -89,7 +90,7 @@ func newAnnounceListClearCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
 				WithDefaultInput(),
-				WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
+				WithDefaultOutput(encodings.NewEncodeTorrentBencode(), nil),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -121,7 +122,7 @@ func newAnnounceListClearCategoryCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
 				WithDefaultInput(),
-				WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
+				WithDefaultOutput(encodings.NewEncodeTorrentBencode(), nil),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -160,7 +161,7 @@ func newAnnounceListGetCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
 				WithDefaultInput(),
-				WithDefaultOutput(outputs.NewEncodePrintAsListOfLists(), outputs.NewStdOutput()),
+				WithDefaultOutput(encodings.NewEncodePrintAsListOfLists(), outputs.NewStandardOutput()),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
@@ -196,7 +197,7 @@ func newAnnounceListGetCategoryCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
 				WithDefaultInput(),
-				WithDefaultOutput(outputs.NewEncodePrintList(), outputs.NewStdOutput()),
+				WithDefaultOutput(encodings.NewEncodePrintList(), outputs.NewStandardOutput()),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)

@@ -2,7 +2,7 @@ package common
 
 import (
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/data/encodings"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ func putCmdRun(cmd *cobra.Command, args []string) {
 
 	metadata, input, output, err := metadataFromCommand(cmd,
 		WithDefaultInput(),
-		WithDefaultOutput(outputs.NewEncodeTorrentBencode(), nil),
+		WithDefaultOutput(encodings.NewEncodeTorrentBencode(), nil),
 		WithAnyValue(),
 	)
 	if err != nil {

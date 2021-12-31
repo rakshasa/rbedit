@@ -1,4 +1,4 @@
-package inputs
+package encodings
 
 import (
 	"bytes"
@@ -9,8 +9,6 @@ import (
 	"github.com/rakshasa/rbedit/types"
 )
 
-// DecodeFunc:
-
 func NewDecodeGenericBencode() types.DecodeFunc {
 	return func(metadata types.IOMetadata, data []byte) (types.IOMetadata, interface{}, error) {
 		object, err := bencode.Decode(bytes.NewReader(data))
@@ -19,6 +17,18 @@ func NewDecodeGenericBencode() types.DecodeFunc {
 		}
 
 		return metadata, object, nil
+	}
+}
+
+func NewEncodeGenericBencode() types.EncodeFunc {
+	return func(metadata types.IOMetadata, object interface{}) (types.IOMetadata, []byte, error) {
+		var buf bytes.Buffer
+
+		if err := bencode.Marshal(&buf, object); err != nil {
+			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data: %v", err)
+		}
+
+		return metadata, buf.Bytes(), nil
 	}
 }
 
@@ -36,5 +46,23 @@ func NewDecodeTorrentBencode() types.DecodeFunc {
 		metadata.InputTorrentInfo = &torrentInfo
 
 		return metadata, object, nil
+	}
+}
+
+func NewEncodeTorrentBencode() types.EncodeFunc {
+	return func(metadata types.IOMetadata, object interface{}) (types.IOMetadata, []byte, error) {
+		torrentInfo, err := objects.NewTorrentInfo(object)
+		if err != nil {
+			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data to bencoded torrent, not a valid torrent: %v", err)
+		}
+		metadata.OutputTorrentInfo = &torrentInfo
+
+		var buf bytes.Buffer
+
+		if err := bencode.Marshal(&buf, object); err != nil {
+			return types.IOMetadata{}, nil, fmt.Errorf("failed to encode data to bencoded torrent: %v", err)
+		}
+
+		return metadata, buf.Bytes(), nil
 	}
 }

@@ -47,3 +47,7 @@ func (h MD5Hash) HEX() string {
 func (h MD5Hash) Len() int {
 	return len(h.hash)
 }
+
+func (h MD5Hash) Raw() string {
+	return string(h.hash)
+}

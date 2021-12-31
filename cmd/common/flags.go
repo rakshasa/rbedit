@@ -15,9 +15,11 @@ const (
 	inputFlagName           = "input"
 	inputBatchFlagName      = "batch"
 	inputNotTorrentFlagName = "not-torrent"
-	outputFlagName          = "output"
-	outputInplaceFlagName   = "inplace"
-	outputTemplateFlagName  = "output-template"
+
+	outputFlagName         = "output"
+	outputInplaceFlagName  = "inplace"
+	outputTemplateFlagName = "output-template"
+	printTemplateFlagName  = "print-template"
 
 	bencodeValueFlagName = "bencode"
 	integerValueFlagName = "int"
@@ -31,6 +33,7 @@ func addInputFlags(cmd *cobra.Command) {
 	cmd.Flags().VarP(&nonEmptyString{}, inputFlagName, "i", "Input filename")
 	cmd.Flags().Bool(inputBatchFlagName, false, "Input as batch of filenames")
 	cmd.Flags().Bool(inputNotTorrentFlagName, false, "Disable torrent verification on input")
+	cmd.Flags().Var(&nonEmptyString{}, printTemplateFlagName, "Print template output")
 }
 
 func addDataOutputFlags(cmd *cobra.Command) {

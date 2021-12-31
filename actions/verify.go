@@ -3,8 +3,8 @@ package actions
 import (
 	"fmt"
 
+	"github.com/rakshasa/rbedit/data/outputs"
 	"github.com/rakshasa/rbedit/objects"
-	"github.com/rakshasa/rbedit/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 

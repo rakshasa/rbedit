@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rakshasa/rbedit/inputs"
-	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/data/encodings"
+	"github.com/rakshasa/rbedit/data/inputs"
+	"github.com/rakshasa/rbedit/data/outputs"
 	"github.com/rakshasa/rbedit/types"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -32,6 +33,7 @@ const (
 	fileOutputTypeName                     outputType = "file-output"
 	fileOutputWithInplaceTypeName          outputType = "inplace-output"
 	fileOutputWithTemplateFilenameTypeName outputType = "template-output"
+	printTemplateTypeName                  outputType = "print-template"
 )
 
 func WithDefaultInput() metadataOpFunction {
@@ -140,9 +142,9 @@ func inputSourceAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOptions)
 	}
 
 	if inputIsTorrent {
-		decodeFn = inputs.NewDecodeTorrentBencode()
+		decodeFn = encodings.NewDecodeTorrentBencode()
 	} else {
-		decodeFn = inputs.NewDecodeGenericBencode()
+		decodeFn = encodings.NewDecodeGenericBencode()
 	}
 
 	switch inputType {
@@ -159,6 +161,7 @@ func inputSourceAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOptions)
 
 func outputDestinatinoAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOptions) (types.Output, error) {
 	var outputValue string
+	var encodeValue string
 	var outputType outputType
 
 	outputFlags := []string{}
@@ -167,14 +170,19 @@ func outputDestinatinoAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOp
 		outputValue = v
 		outputFlags = append(outputFlags, outputFlagName)
 	}
+	if flag := getChangedTrue(flagSet, outputInplaceFlagName); flag {
+		outputType = fileOutputWithInplaceTypeName
+		outputFlags = append(outputFlags, outputInplaceFlagName)
+	}
 	if v, ok := getChangedString(flagSet, outputTemplateFlagName); ok {
 		outputValue = v
 		outputType = fileOutputWithTemplateFilenameTypeName
 		outputFlags = append(outputFlags, outputTemplateFlagName)
 	}
-	if flag := getChangedTrue(flagSet, outputInplaceFlagName); flag {
-		outputType = fileOutputWithInplaceTypeName
-		outputFlags = append(outputFlags, outputInplaceFlagName)
+	if v, ok := getChangedString(flagSet, printTemplateFlagName); ok {
+		encodeValue = v
+		outputType = printTemplateTypeName
+		outputFlags = append(outputFlags, printTemplateFlagName)
 	}
 
 	if len(outputFlags) > 1 {
@@ -198,6 +206,13 @@ func outputDestinatinoAndTypeFromFlagSet(flagSet *flag.FlagSet, opts *metadataOp
 		}
 
 		return outputs.NewSingleOutput(opts.defaultEncodeFn, outputs.NewFileOutputWithTemplateFilename(outputValue)), nil
+
+	case printTemplateTypeName:
+		if len(encodeValue) == 0 {
+			return nil, fmt.Errorf("missing valid print template")
+		}
+
+		return outputs.NewSingleOutput(encodings.NewEncodePrintTemplate(encodeValue), outputs.NewStandardOutput()), nil
 
 	case "":
 		if opts.defaultOutputFn == nil {

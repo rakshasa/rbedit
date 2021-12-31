@@ -1,11 +1,9 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
 	"path"
 	"strings"
-	"text/template"
 )
 
 type IOMetadata struct {
@@ -14,60 +12,29 @@ type IOMetadata struct {
 	InputTorrentInfo  *TorrentInfo
 	OutputTorrentInfo *TorrentInfo
 	Value             interface{}
-	InfoHash          string // TODO: Remove!
 }
 
-type FilenameInfo struct {
+type FileInfo struct {
 	filename string
 }
 
 type TorrentInfo struct {
-	Name              string
-	HashFn            func() (MD5Hash, error)
-	StrictlyCompliant bool
+	name              string
+	hashFn            func() (MD5Hash, error)
+	strictlyCompliant bool
 }
 
-func (m *IOMetadata) ExecuteTemplate(t string) (string, error) {
-	type outputTemplate struct {
-		TorrentInfo *TorrentInfo
-	}
-	type inputTemplate struct {
-		TorrentInfo *TorrentInfo
-		FilenameInfo
-	}
-	type ioMetadataTemplate struct {
-		Input  inputTemplate
-		Output outputTemplate
+// FileInfo:
+
+func NewFileInfo(filename string) (*FileInfo, error) {
+	if len(filename) == 0 {
+		return nil, fmt.Errorf("missing input filename")
 	}
 
-	data := ioMetadataTemplate{
-		inputTemplate{
-			TorrentInfo:  m.InputTorrentInfo,
-			FilenameInfo: FilenameInfo{m.InputFilename},
-		},
-		outputTemplate{
-			TorrentInfo: m.OutputTorrentInfo,
-		},
-	}
-
-	tmpl, err := template.New("top").Parse(t)
-	if err != nil {
-		return "", err
-	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, &data); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
+	return &FileInfo{filename: filename}, nil
 }
 
-func (t *TorrentInfo) Hash() (MD5Hash, error) {
-	return t.HashFn()
-}
-
-func (f *FilenameInfo) Filename() (string, error) {
+func (f *FileInfo) Filename() (string, error) {
 	if len(f.filename) == 0 {
 		return "", fmt.Errorf("missing input filename")
 	}
@@ -75,7 +42,7 @@ func (f *FilenameInfo) Filename() (string, error) {
 	return f.filename, nil
 }
 
-func (f *FilenameInfo) Basename() (string, error) {
+func (f *FileInfo) Basename() (string, error) {
 	if len(f.filename) == 0 {
 		return "", fmt.Errorf("missing input filename")
 	}
@@ -83,7 +50,7 @@ func (f *FilenameInfo) Basename() (string, error) {
 	return path.Base(f.filename), nil
 }
 
-func (f *FilenameInfo) BasenameWithoutTorrent() (string, error) {
+func (f *FileInfo) BasenameWithoutTorrent() (string, error) {
 	if len(f.filename) == 0 {
 		return "", fmt.Errorf("missing input filename")
 	}
@@ -97,10 +64,36 @@ func (f *FilenameInfo) BasenameWithoutTorrent() (string, error) {
 	return basename[:len(basename)-len(".torrent")], nil
 }
 
-func (f *FilenameInfo) Dirname() (string, error) {
+func (f *FileInfo) Dirname() (string, error) {
 	if len(f.filename) == 0 {
 		return "", fmt.Errorf("missing input filename")
 	}
 
 	return path.Dir(f.filename), nil
+}
+
+// TorrentInfo:
+
+func NewTorrentInfo(name string, hashFn func() (MD5Hash, error), strictlyCompliant bool) (*TorrentInfo, error) {
+	if len(name) == 0 {
+		return nil, fmt.Errorf("missing torrent name")
+	}
+
+	return &TorrentInfo{
+		name:              name,
+		hashFn:            hashFn,
+		strictlyCompliant: strictlyCompliant,
+	}, nil
+}
+
+func (t *TorrentInfo) Hash() (MD5Hash, error) {
+	return t.hashFn()
+}
+
+func (t *TorrentInfo) Name() string {
+	return t.name
+}
+
+func (t *TorrentInfo) StrictlyCompliant() bool {
+	return t.strictlyCompliant
 }

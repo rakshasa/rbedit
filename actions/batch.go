@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/data/outputs"
 	"github.com/rakshasa/rbedit/types"
 )
 

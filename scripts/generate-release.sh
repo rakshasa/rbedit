@@ -38,15 +38,17 @@ build_dir="$(mktemp -d)"
 
   BUILD_DIR="${build_dir}" TARGET_OS=linux ./scripts/build.sh
   BUILD_DIR="${build_dir}" TARGET_OS=darwin ./scripts/build.sh
+  BUILD_DIR="${build_dir}" TARGET_OS=windows ./scripts/build.sh
 )
 
 ( cd "${build_dir}"; ls .
 
   zip rbedit-darwin-amd64.zip rbedit-darwin-amd64
   zip rbedit-linux-amd64.zip rbedit-linux-amd64
+  zip rbedit-windows-amd64.zip rbedit-windows-amd64
 )
 
 set +x
 
-printf "\n%s" "${build_dir}/"*
+printf "\n%s" "${build_dir}/"*.zip
 printf "\n"

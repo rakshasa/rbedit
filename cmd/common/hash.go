@@ -2,7 +2,8 @@ package common
 
 import (
 	"github.com/rakshasa/rbedit/actions"
-	"github.com/rakshasa/rbedit/outputs"
+	"github.com/rakshasa/rbedit/data/encodings"
+	"github.com/rakshasa/rbedit/data/outputs"
 	"github.com/spf13/cobra"
 )
 
@@ -38,17 +39,15 @@ func newHashInfoCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			metadata, input, output, err := metadataFromCommand(cmd,
 				WithDefaultInput(),
-				WithDefaultOutput(outputs.NewEncodeAsHexString(), outputs.NewStdOutput()),
+				WithDefaultOutput(encodings.NewEncodeAsHexString(), outputs.NewStandardOutput()),
 			)
 			if err != nil {
 				printCommandErrorAndExit(cmd, err)
 			}
 
 			batch := actions.NewBatch()
-			batch.Append(actions.NewCalculateInfoHash())
-			batch.Append(actions.NewCachedInfoHash())
-
-			// batch.Append(actions.NewSHA1(infoHashKeys, types.ObjectResultTarget))
+			// TODO: Allow both Bytes and Hash alone.
+			batch.Append(actions.NewTemplateExecute("{{ .Input.TorrentInfo.Hash.Bytes }}"))
 
 			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 				printCommandErrorAndExit(cmd, err)
