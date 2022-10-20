@@ -47,7 +47,7 @@ func newHashInfoCommand() *cobra.Command {
 
 			batch := actions.NewBatch()
 			// TODO: Allow both Bytes and Hash alone.
-			batch.Append(actions.NewTemplateExecute("{{ .Input.TorrentInfo.Hash.Bytes }}"))
+			batch.Append(actions.NewTemplateExecute("{{ .Input.Torrent.Hash.Bytes }}"))
 
 			if err := input.Execute(metadata, batch.CreateFunction(output)); err != nil {
 				printCommandErrorAndExit(cmd, err)
